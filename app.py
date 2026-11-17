@@ -31,21 +31,48 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 0.75rem;
+        margin: 0.5rem 0 1rem 0;
+    }
+    .kpi-card {
+        background-color: rgba(148, 163, 184, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.20);
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+    }
+    .kpi-label {
+        font-size: 0.8rem;
+        opacity: 0.75;
+        margin-bottom: 0.25rem;
+    }
+    .kpi-value {
+        font-size: 1.55rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .kpi-sub {
+        font-size: 0.78rem;
+        color: #38BDF8;
+        margin-top: 0.25rem;
+    }
     .step-card {
-        background-color: rgba(148, 163, 184, 0.10);
+        background-color: rgba(148, 163, 184, 0.08);
         border: 1px solid rgba(148, 163, 184, 0.18);
-        border-left: 4px solid #64748B;
-        border-radius: 8px;
+        border: 4px solid #64748B;
         padding: 0.85rem 1rem;
         margin-bottom: 0.7rem;
         color: inherit;
         line-height: 1.5;
     }
-    .step-evap { border-left-color: #0EA5E9; }
-    .step-comp { border-left-color: #EF4444; }
-    .step-cond { border-left-color: #F97316; }
-    .step-valve { border-left-color: #22C55E; }
+    .step-evap { border-color: #0EA5E9; }
+    .step-comp { border-color: #EF4444; }
+    .step-cond { border-color: #F97316; }
+    .step-valve { border-color: #22C55E; }
     .app-footer {
+        margin-top: auto;
         text-align: center;
         opacity: 0.8;
         font-size: 0.9rem;
@@ -65,13 +92,15 @@ st.markdown(
             padding-right: 0.85rem !important;
             padding-top: 1.2rem !important;
         }
-        [data-testid="stHorizontalBlock"] {
-            flex-wrap: wrap !important;
-            gap: 0.6rem !important;
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.55rem;
         }
-        [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
-            flex: 1 1 calc(50% - 0.6rem) !important;
-            min-width: calc(50% - 0.6rem) !important;
+        .kpi-card {
+            padding: 0.7rem 0.75rem;
+        }
+        .kpi-value {
+            font-size: 1.25rem;
         }
         .step-card {
             padding: 0.75rem 0.85rem;
@@ -146,7 +175,7 @@ if "selected_preset" not in st.session_state:
     _apply_preset("air_floor_spring")
 
 # --- NAGŁÓWEK ---
-st.title("🔥 Kalkulator i Symulator Obiegu Pompy Ciepła")
+st.title("Kalkulator i Symulator Obiegu Pompy Ciepła")
 st.markdown(
     "Narzędzie szkoleniowo-badawcze oparte na **TESPy**, **CoolProp** i **SciPy**. "
     "Zmieniaj parametry w panelu bocznym, aby na żywo obserwować, jak zmienia się praca sprężarki, "
@@ -304,43 +333,43 @@ if simulation_error or result is None:
     st.error(f"⚠️ {simulation_error}")
     st.info("Skoryguj parametry w panelu bocznym lub wybierz jeden z gotowych scenariuszy.")
 else:
-    # --- KARTY KPI ---
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
-    col1.metric(
-        "COP (Efektywność)",
-        f"{result.cop_heating:.2f}",
-        f"{result.eta_exergetic * 100:.0f}% Carnota ({result.cop_carnot:.2f})",
-        help="Stosunek oddanego ciepła (Q_cond) do pobranego prądu (P_el). Im mniejsza różnica temperatur T_cond - T_evap, tym wyższe COP.",
-    )
-    col2.metric(
-        "Ciepło do budynku Q_cond",
-        f"{result.q_cond_kw:.2f} kW",
-        f"ΔT_lift = {result.delta_t_lift_k:.1f} K",
-        help="Łączna moc grzewcza oddawana w skraplaczu.",
-    )
-    col3.metric(
-        "Pobór prądu P_el",
-        f"{result.p_comp_kw:.2f} kW",
-        f"{result.p_comp_kw / result.q_cond_kw * 100:.0f}% energii",
-        help="Moc napędowa sprężarki — jedyna energia, za którą płacisz na rachunku.",
-    )
-    col4.metric(
-        "Ciepło z natury Q_evap",
-        f"{result.q_evap_kw:.2f} kW",
-        f"{result.q_evap_kw / result.q_cond_kw * 100:.0f}% za darmo",
-        help="Energia pobrana z powietrza zewnętrznego lub gruntu w parowniku.",
-    )
-    col5.metric(
-        "Temp. tłoczenia T₂",
-        f"{result.t_discharge_c:.1f} °C",
-        f"ṁ = {result.mass_flow_kg_s * 1000:.1f} g/s",
-        help="Temperatura gorącej pary na wylocie ze sprężarki. Zbyt wysoka (>115°C) grozi degradacją oleju sprężarkowego.",
-    )
-    col6.metric(
-        "Spręż Π = p₂ / p₁",
-        f"{result.pressure_ratio:.2f}",
-        f"{result.p_evap_bar:.1f} → {result.p_cond_bar:.1f} bar",
-        help="Stosunek ciśnienia skraplania do ciśnienia parowania.",
+    # --- KARTY KPI (responsywna siatka CSS: 6 kolumn na desktopie, 2 na mobile) ---
+    st.markdown(
+        f"""
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">COP (Efektywność)</div>
+                <div class="kpi-value">{result.cop_heating:.2f}</div>
+                <div class="kpi-sub">{result.eta_exergetic * 100:.0f}% Carnota ({result.cop_carnot:.2f})</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Ciepło do budynku Q_cond</div>
+                <div class="kpi-value">{result.q_cond_kw:.2f} kW</div>
+                <div class="kpi-sub">ΔT_lift = {result.delta_t_lift_k:.1f} K</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Pobór prądu P_el</div>
+                <div class="kpi-value">{result.p_comp_kw:.2f} kW</div>
+                <div class="kpi-sub">{result.p_comp_kw / result.q_cond_kw * 100:.0f}% energii</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Ciepło z natury Q_evap</div>
+                <div class="kpi-value">{result.q_evap_kw:.2f} kW</div>
+                <div class="kpi-sub">{result.q_evap_kw / result.q_cond_kw * 100:.0f}% za darmo</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Temp. tłoczenia T₂</div>
+                <div class="kpi-value">{result.t_discharge_c:.1f} °C</div>
+                <div class="kpi-sub">ṁ = {result.mass_flow_kg_s * 1000:.1f} g/s</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Spręż Π = p₂ / p₁</div>
+                <div class="kpi-value">{result.pressure_ratio:.2f}</div>
+                <div class="kpi-sub">{result.p_evap_bar:.1f} → {result.p_cond_bar:.1f} bar</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     if result.t_discharge_c > 115.0:
@@ -355,11 +384,11 @@ else:
     # --- ZAKŁADKI APLIKACJI ---
     tab_mechanics, tab_charts, tab_table, tab_scipy, tab_glossary = st.tabs(
         [
-            "🔄 Schemat i mechanika",
-            "📈 Wykresy log(p)-h i T-s",
-            "📋 Punkty i bilans",
-            "🎯 Optymalizacja (SciPy)",
-            "📚 Słowniczek",
+            "Schemat i mechanika",
+            "Wykresy log(p)-h i T-s",
+            "Punkty i bilans",
+            "Optymalizacja (SciPy)",
+            "Słowniczek",
         ]
     )
 
@@ -377,12 +406,12 @@ else:
             try:
                 st.plotly_chart(
                     create_cycle_schematic(result),
-                    use_container_width=True,
+                    width="stretch",
                     theme="streamlit",
                 )
                 st.plotly_chart(
                     create_energy_balance_bar(result),
-                    use_container_width=True,
+                    width="stretch",
                     theme="streamlit",
                 )
             except Exception as exc:
@@ -462,7 +491,7 @@ else:
             try:
                 st.plotly_chart(
                     create_ph_diagram(result.plot_data),
-                    use_container_width=True,
+                    width="stretch",
                     theme="streamlit",
                 )
             except Exception as exc:
@@ -471,7 +500,7 @@ else:
             try:
                 st.plotly_chart(
                     create_ts_diagram(result.plot_data),
-                    use_container_width=True,
+                    width="stretch",
                     theme="streamlit",
                 )
             except Exception as exc:
@@ -480,7 +509,7 @@ else:
     # === ZAKŁADKA 3: TABELA PUNKTÓW I BILANS ===
     with tab_table:
         st.subheader("Parametry termodynamiczne w punktach węzłowych (1–4)")
-        st.dataframe(result.state_points_df, use_container_width=True, hide_index=True)
+        st.dataframe(result.state_points_df, width="stretch", hide_index=True)
 
         csv_bytes = result.state_points_df.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -571,7 +600,7 @@ else:
                 try:
                     st.plotly_chart(
                         create_subcooling_curve_plot(opt_res),
-                        use_container_width=True,
+                        width="stretch",
                         theme="streamlit",
                     )
                 except Exception as exc:
@@ -596,11 +625,11 @@ else:
                     cycle_dict,
                     t_evap_range=(evap_grid_min, evap_grid_max),
                     t_cond_range=(cond_grid_min, cond_grid_max),
-                    n_points=6,
+                    n_points=5,
                 )
                 st.plotly_chart(
                     create_cop_contour_plot(sens_data, t_evap_c, t_cond_c),
-                    use_container_width=True,
+                    width="stretch",
                     theme="streamlit",
                 )
         except Exception as err:

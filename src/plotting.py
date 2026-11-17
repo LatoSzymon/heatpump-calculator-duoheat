@@ -80,8 +80,6 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
 
     fig = go.Figure()
 
-    # Układ współrzędnych: x in [-1.2, 11.2], y in [-0.8, 6.8]
-    # Parownik na dole (y=1.2), Skraplacz na górze (y=4.8), Sprężarka po lewej (x=2.0), Zawór po prawej (x=8.0)
     pipes = [
         dict(x=[8.0, 6.3], y=[1.2, 1.2], color="#0284C7", name="4 → Parownik (wrzenie)"),
         dict(x=[3.7, 2.0, 2.0], y=[1.2, 1.2, 2.45], color="#38BDF8", name="1 (Ssanie sprężarki)"),
@@ -103,31 +101,25 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
             )
         )
 
-    # Kształty 4 głównych komponentów (półprzezroczyste wypełnienie dla trybu ciemnego i jasnego)
     shapes = [
-        # Skraplacz (góra)
         dict(
             type="rect", x0=3.7, y0=4.25, x1=6.3, y1=5.35,
             fillcolor="rgba(239, 68, 68, 0.14)", line=dict(color="#EF4444", width=2.5),
         ),
-        # Parownik (dół)
         dict(
             type="rect", x0=3.7, y0=0.65, x1=6.3, y1=1.75,
             fillcolor="rgba(14, 165, 233, 0.14)", line=dict(color="#0EA5E9", width=2.5),
         ),
-        # Sprężarka (lewa)
         dict(
             type="circle", x0=1.35, y0=2.35, x1=2.65, y1=3.65,
             fillcolor="rgba(249, 115, 22, 0.14)", line=dict(color="#F97316", width=2.5),
         ),
-        # Zawór rozprężny (prawa)
         dict(
             type="rect", x0=7.35, y0=2.5, x1=8.65, y1=3.5,
             fillcolor="rgba(34, 197, 94, 0.14)", line=dict(color="#22C55E", width=2.5),
         ),
     ]
 
-    # Punkty węzłowe (1, 2, 3, 4) rozmieszczone z dużym odstępem od komponentów
     node_x = [2.0, 2.8, 7.2, 8.0]
     node_y = [1.85, 4.8, 4.8, 1.85]
     node_labels = ["1", "2", "3", "4"]
@@ -155,13 +147,11 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
     )
 
     annotations = [
-        # Opisy komponentów
         dict(x=5.0, y=4.8, text="<b>SKRAPLACZ</b><br><span style='font-size:11px'>Oddaje ciepło</span>", showarrow=False, font=dict(color="#F87171", size=13)),
         dict(x=5.0, y=1.2, text="<b>PAROWNIK</b><br><span style='font-size:11px'>Pobiera ciepło</span>", showarrow=False, font=dict(color="#38BDF8", size=13)),
         dict(x=2.0, y=3.0, text="<b>SPRĘŻARKA</b>", showarrow=False, font=dict(color="#FB923C", size=11)),
         dict(x=8.0, y=3.0, text="<b>ZAWÓR</b><br><span style='font-size:10px'>dławiący</span>", showarrow=False, font=dict(color="#4ADE80", size=11)),
 
-        # Strzałki energii (z dużym odstępem od etykiet)
         dict(
             x=5.0, y=6.0, ax=5.0, ay=5.4, xref="x", yref="y", axref="x", ayref="y",
             showarrow=True, arrowhead=2, arrowsize=1.3, arrowwidth=3, arrowcolor="#EF4444",
@@ -190,13 +180,11 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
             showarrow=False, font=dict(color="#FB923C", size=12),
         ),
 
-        # Etykiety parametrów przy punktach 1..4 (odsunięte na zewnątrz, zero kolizji)
         dict(x=1.05, y=1.85, text=f"<b>{t_vals[0]:.1f} °C</b><br>{p_vals[0]:.2f} bar", showarrow=False, font=dict(size=11, color="#38BDF8")),
         dict(x=2.8, y=5.45, text=f"<b>{t_vals[1]:.1f} °C</b><br>{p_vals[1]:.2f} bar", showarrow=False, font=dict(size=11, color="#F87171")),
         dict(x=7.2, y=5.45, text=f"<b>{t_vals[2]:.1f} °C</b><br>{p_vals[2]:.2f} bar", showarrow=False, font=dict(size=11, color="#FB923C")),
         dict(x=9.1, y=1.85, text=f"<b>{t_vals[3]:.1f} °C</b><br>x = {result.x_4 * 100:.0f}% pary", showarrow=False, font=dict(size=11, color="#38BDF8")),
 
-        # Kierunki przepływu
         dict(x=2.0, y=4.25, ax=2.0, ay=3.75, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#EF4444", arrowwidth=2),
         dict(x=8.0, y=2.05, ax=8.0, ay=2.45, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#0EA5E9", arrowwidth=2),
     ]
@@ -206,7 +194,7 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
         annotations=annotations,
         xaxis=dict(range=[-0.4, 10.2], visible=False, fixedrange=True),
         yaxis=dict(range=[-0.65, 6.7], visible=False, fixedrange=True),
-        height=420,
+        height=400,
         margin=dict(l=5, r=5, t=10, b=10),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
@@ -220,33 +208,33 @@ def create_energy_balance_bar(result: "CycleResult") -> go.Figure:
 
     fig.add_trace(
         go.Bar(
-            y=["Energia wejściowa"],
+            y=["Źródło"],
             x=[result.q_evap_kw],
-            name=f"Z natury: {result.q_evap_kw:.2f} kW",
+            name=f"Z natury ({result.q_evap_kw:.2f} kW)",
             orientation="h",
             marker=dict(color="#0284C7"),
-            text=f"Q_evap: {result.q_evap_kw:.2f} kW",
+            text=f"Z natury: {result.q_evap_kw:.2f} kW",
             textposition="inside",
             insidetextanchor="middle",
         )
     )
     fig.add_trace(
         go.Bar(
-            y=["Energia wejściowa"],
+            y=["Źródło"],
             x=[result.p_comp_kw],
-            name=f"Prąd: {result.p_comp_kw:.2f} kW",
+            name=f"Prąd ({result.p_comp_kw:.2f} kW)",
             orientation="h",
             marker=dict(color="#EA580C"),
-            text=f"P_el: {result.p_comp_kw:.2f} kW",
+            text=f"Prąd: {result.p_comp_kw:.2f} kW",
             textposition="inside",
             insidetextanchor="middle",
         )
     )
     fig.add_trace(
         go.Bar(
-            y=["Ciepło oddane"],
+            y=["Budynek"],
             x=[result.q_cond_kw],
-            name=f"Do budynku: {result.q_cond_kw:.2f} kW",
+            name=f"Do budynku ({result.q_cond_kw:.2f} kW)",
             orientation="h",
             marker=dict(color="#DC2626"),
             text=f"Q_cond = {result.q_cond_kw:.2f} kW (COP {result.cop_heating:.2f})",
@@ -259,18 +247,11 @@ def create_energy_balance_bar(result: "CycleResult") -> go.Figure:
         barmode="stack",
         title="Bilans mocy: Q_evap + P_el = Q_cond",
         xaxis_title="Moc [kW]",
-        height=260,
-        margin=dict(l=10, r=10, t=45, b=85),
+        height=190,
+        showlegend=False,
+        margin=dict(l=10, r=10, t=40, b=40),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        legend=dict(
-            orientation="h",
-            yanchor="top",
-            y=-0.32,
-            xanchor="center",
-            x=0.5,
-            itemwidth=30,
-        ),
     )
     return fig
 
@@ -324,7 +305,7 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
                 color="#EF4444",
                 line=dict(width=2, color="#FFFFFF"),
             ),
-            customdata=np.column_stack((labels, plot_data["T_c"], plot_data["s_kj_kgk"])),
+            customdata=list(zip(labels, plot_data["T_c"], plot_data["s_kj_kgk"])),
             hovertemplate=(
                 "<b>Punkt %{customdata[0]}</b><br>"
                 "p = %{y:.2f} bar<br>"
@@ -335,23 +316,30 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
         )
     )
 
+    # UWAGA: Na osi logarytmicznej Plotly (yaxis_type="log") współrzędna y adnotacji musi być w skali log10!
     h_min = float(np.min(dome["h_dome"]))
     h_max = float(np.max(dome["h_dome"]))
     p_mid = float(np.sqrt(plot_data["p_evap_bar"] * plot_data["p_cond_bar"]))
     fig.add_annotation(
-        x=dome["h_crit"], y=p_mid,
+        x=dome["h_crit"],
+        y=float(np.log10(p_mid)),
         text="Obszar dwufazowy<br>(ciecz + para)",
-        showarrow=False, font=dict(size=11, color="#94A3B8"),
+        showarrow=False,
+        font=dict(size=11, color="#94A3B8"),
     )
     fig.add_annotation(
-        x=h_min + 0.08 * (h_max - h_min), y=plot_data["p_cond_bar"] * 0.75,
+        x=h_min + 0.08 * (h_max - h_min),
+        y=float(np.log10(plot_data["p_cond_bar"] * 0.75)),
         text="Ciecz<br>dochłodzona",
-        showarrow=False, font=dict(size=10, color="#38BDF8"),
+        showarrow=False,
+        font=dict(size=10, color="#38BDF8"),
     )
     fig.add_annotation(
-        x=h_max - 0.05 * (h_max - h_min), y=p_mid,
+        x=h_max - 0.05 * (h_max - h_min),
+        y=float(np.log10(p_mid)),
         text="Para<br>przegrzana",
-        showarrow=False, font=dict(size=10, color="#F87171"),
+        showarrow=False,
+        font=dict(size=10, color="#F87171"),
     )
 
     fig.update_layout(
@@ -359,11 +347,11 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
         xaxis_title="Entalpia właściwa h [kJ/kg]",
         yaxis_title="Ciśnienie absolutne p [bar] (log)",
         yaxis_type="log",
-        height=480,
+        height=490,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5),
-        margin=dict(l=45, r=20, t=50, b=80),
+        legend=dict(orientation="h", yanchor="top", y=-0.24, xanchor="center", x=0.5),
+        margin=dict(l=45, r=20, t=50, b=105),
     )
 
     return fig
@@ -418,7 +406,7 @@ def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
                 color="#3B82F6",
                 line=dict(width=2, color="#FFFFFF"),
             ),
-            customdata=np.column_stack((labels, plot_data["p_bar"], plot_data["h_kj_kg"])),
+            customdata=list(zip(labels, plot_data["p_bar"], plot_data["h_kj_kg"])),
             hovertemplate=(
                 "<b>Punkt %{customdata[0]}</b><br>"
                 "T = %{y:.2f} °C<br>"
@@ -440,11 +428,11 @@ def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
         title=f"Wykres T-s (Temperatura–Entropia) — {fluid}",
         xaxis_title="Entropia właściwa s [kJ/(kg·K)]",
         yaxis_title="Temperatura T [°C]",
-        height=480,
+        height=490,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        legend=dict(orientation="h", yanchor="top", y=-0.18, xanchor="center", x=0.5),
-        margin=dict(l=45, r=20, t=50, b=80),
+        legend=dict(orientation="h", yanchor="top", y=-0.24, xanchor="center", x=0.5),
+        margin=dict(l=45, r=20, t=50, b=105),
     )
 
     return fig
@@ -538,10 +526,10 @@ def create_subcooling_curve_plot(opt_res: Dict[str, Any]) -> go.Figure:
         title="Wpływ dochłodzenia ΔT_sc na efektywne COP",
         xaxis_title="Dochłodzenie ΔT_sc [K]",
         yaxis_title="COP grzewcze [-]",
-        height=320,
+        height=330,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=40, r=20, t=45, b=70),
-        legend=dict(orientation="h", yanchor="top", y=-0.25, xanchor="center", x=0.5),
+        margin=dict(l=40, r=20, t=45, b=85),
+        legend=dict(orientation="h", yanchor="top", y=-0.28, xanchor="center", x=0.5),
     )
     return fig
