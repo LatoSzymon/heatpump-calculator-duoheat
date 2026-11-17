@@ -343,15 +343,22 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
     )
 
     fig.update_layout(
-        title=f"Wykres log(p)-h (Molliera) — {fluid}",
+        title=dict(text=f"Wykres log(p)-h (Molliera) — {fluid}", font=dict(size=15)),
         xaxis_title="Entalpia właściwa h [kJ/kg]",
         yaxis_title="Ciśnienie absolutne p [bar] (log)",
         yaxis_type="log",
-        height=490,
+        height=460,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        legend=dict(orientation="h", yanchor="top", y=-0.24, xanchor="center", x=0.5),
-        margin=dict(l=45, r=20, t=50, b=105),
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.26,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11),
+        ),
+        margin=dict(l=45, r=15, t=50, b=115),
     )
 
     return fig
@@ -425,14 +432,21 @@ def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
     )
 
     fig.update_layout(
-        title=f"Wykres T-s (Temperatura–Entropia) — {fluid}",
+        title=dict(text=f"Wykres T-s (Temperatura–Entropia) — {fluid}", font=dict(size=15)),
         xaxis_title="Entropia właściwa s [kJ/(kg·K)]",
         yaxis_title="Temperatura T [°C]",
-        height=490,
+        height=460,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        legend=dict(orientation="h", yanchor="top", y=-0.24, xanchor="center", x=0.5),
-        margin=dict(l=45, r=20, t=50, b=105),
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.26,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11),
+        ),
+        margin=dict(l=45, r=15, t=50, b=115),
     )
 
     return fig

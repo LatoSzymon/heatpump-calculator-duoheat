@@ -24,7 +24,7 @@ st.set_page_config(
     page_title="Kalkulator Obiegu Pompy Ciepła — Instytut Naukowy",
     page_icon="🔥",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 # Spójne style dla trybu ciemnego/jasnego oraz responsywny layout mobilny
@@ -88,19 +88,46 @@ st.markdown(
     }
     @media (max-width: 768px) {
         .block-container {
-            padding-left: 0.85rem !important;
-            padding-right: 0.85rem !important;
-            padding-top: 1.2rem !important;
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+            padding-top: 1rem !important;
+        }
+        h1 {
+            font-size: 1.45rem !important;
+            line-height: 1.25 !important;
+        }
+        h2, h3 {
+            font-size: 1.15rem !important;
+        }
+        [data-baseweb="tab-list"] {
+            overflow-x: auto !important;
+            flex-wrap: nowrap !important;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            gap: 0.25rem;
+        }
+        [data-baseweb="tab-list"]::-webkit-scrollbar {
+            display: none;
+        }
+        [data-baseweb="tab"] {
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.9rem !important;
+        }
+        .stButton > button, .stDownloadButton > button {
+            min-height: 44px;
+            width: 100%;
         }
         .kpi-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 0.55rem;
+            gap: 0.5rem;
         }
         .kpi-card {
-            padding: 0.7rem 0.75rem;
+            padding: 0.65rem 0.75rem;
         }
         .kpi-value {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
         }
         .step-card {
             padding: 0.75rem 0.85rem;
@@ -184,7 +211,7 @@ st.markdown(
 
 # --- PANEL BOCZNY (PARAMETRY WEJŚCIOWE) ---
 with st.sidebar:
-    st.header("⚙️ Konfiguracja obiegu")
+    st.header("Konfiguracja obiegu")
 
     preset_options = ["custom"] + list(SCENARIO_PRESETS.keys())
     selected_preset = st.selectbox(
@@ -408,11 +435,13 @@ else:
                     create_cycle_schematic(result),
                     width="stretch",
                     theme="streamlit",
+                    config={"displayModeBar": False, "responsive": True},
                 )
                 st.plotly_chart(
                     create_energy_balance_bar(result),
                     width="stretch",
                     theme="streamlit",
+                    config={"displayModeBar": False, "responsive": True},
                 )
             except Exception as exc:
                 st.error(f"Nie udało się wygenerować schematu obiegu: {exc}")
@@ -493,6 +522,7 @@ else:
                     create_ph_diagram(result.plot_data),
                     width="stretch",
                     theme="streamlit",
+                    config={"displaylogo": False, "responsive": True},
                 )
             except Exception as exc:
                 st.error(f"Błąd generowania wykresu log(p)-h: {exc}")
@@ -502,6 +532,7 @@ else:
                     create_ts_diagram(result.plot_data),
                     width="stretch",
                     theme="streamlit",
+                    config={"displaylogo": False, "responsive": True},
                 )
             except Exception as exc:
                 st.error(f"Błąd generowania wykresu T-s: {exc}")
@@ -637,7 +668,7 @@ else:
 
     # === ZAKŁADKA 5: SŁOWNICZEK DLA NOWYCH PRACOWNIKÓW ===
     with tab_glossary:
-        st.subheader("Kompendium pojęć termodynamicznych dla nowych pracowników")
+        st.subheader("Kompendium pojęć termodynamicznych")
         st.markdown(
             "Poniżej zebrano najważniejsze pojęcia, które pojawiają się podczas pracy z pompami ciepła w naszym instytucie."
         )
