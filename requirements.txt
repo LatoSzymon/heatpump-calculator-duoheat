@@ -1,0 +1,10 @@
+tespy>=0.7.0
+scipy>=1.11.0
+numpy>=1.26.0
+CoolProp>=6.6.0
+fluprodia>=3.0
+streamlit>=1.32.0
+plotly>=5.20.0
+pandas>=2.2.0
+matplotlib>=3.8.0
+pytest>=8.0.0
