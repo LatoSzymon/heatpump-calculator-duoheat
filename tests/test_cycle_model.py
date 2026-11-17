@@ -8,10 +8,14 @@ from src.optimizer import (
     run_sensitivity_grid,
 )
 from src.plotting import (
-    create_ph_diagram,
-    create_ts_diagram,
     create_cop_contour_plot,
+    create_cycle_schematic,
+    create_energy_balance_bar,
+    create_ph_diagram,
+    create_subcooling_curve_plot,
+    create_ts_diagram,
 )
+from src.utils import SCENARIO_PRESETS
 
 
 def test_single_stage_r290_energy_balance():
@@ -28,18 +32,26 @@ def test_single_stage_r290_energy_balance():
     res = HeatPumpCycle(inp).solve()
 
     assert res.q_cond_kw == pytest.approx(10.0, rel=1e-4)
-    # Bilans energii: Q_cond = Q_evap + P_comp
     assert abs(res.energy_balance_error_w) < 1e-2
     assert res.q_cond_kw == pytest.approx(res.q_evap_kw + res.p_comp_kw, rel=1e-4)
-    # COP_grzewcze = COP_chlodnicze + 1
     assert res.cop_heating == pytest.approx(res.cop_cooling + 1.0, rel=1e-3)
     assert 3.0 < res.cop_heating < 6.0
     assert len(res.state_points_df) == 4
+    assert 0.0 < res.x_4 < 1.0
+    assert res.t_discharge_c > inp.t_cond_c
+    assert res.q_desuperheat_kw + res.q_cond_latent_kw + res.q_subcool_kw == pytest.approx(
+        res.q_cond_kw, rel=1e-2
+    )
+    assert res.q_evap_latent_kw + res.q_superheat_kw == pytest.approx(
+        res.q_evap_kw, rel=1e-2
+    )
 
 
-@pytest.mark.parametrize("fluid", ["R290", "R32", "R134a", "R1234yf", "R600a"])
+@pytest.mark.parametrize(
+    "fluid", ["R290", "R32", "R134a", "R410A", "R1234yf", "R600a", "R717"]
+)
 def test_multiple_refrigerants(fluid: str):
-    """Sprawdza działanie modelu dla różnych czynników chłodniczych."""
+    """Sprawdza działanie modelu dla wszystkich obsługiwanych czynników chłodniczych."""
     inp = CycleInput(
         fluid=fluid,
         t_evap_c=-5.0,
@@ -55,13 +67,28 @@ def test_multiple_refrigerants(fluid: str):
     assert res.mass_flow_kg_s > 0.0
 
 
+def test_scenario_presets_solve():
+    """Sprawdza, czy wszystkie gotowe scenariusze edukacyjne rozwiązują się poprawnie."""
+    for preset in SCENARIO_PRESETS.values():
+        inp = CycleInput(
+            fluid=preset.fluid,
+            t_evap_c=preset.t_evap_c,
+            t_cond_c=preset.t_cond_c,
+            superheat_k=preset.superheat_k,
+            subcooling_k=preset.subcooling_k,
+            eta_s=preset.eta_s,
+            q_cond_kw=preset.q_cond_kw,
+        )
+        res = HeatPumpCycle(inp).solve()
+        assert res.cop_heating > 2.0
+        assert abs(res.energy_balance_error_w) < 1e-2
+
+
 def test_validation_errors():
     """Weryfikuje zgłaszanie wyjątków dla niefizycznych parametrów wejściowych."""
-    # T_evap >= T_cond
     with pytest.raises(ValueError, match="Temperatura parowania"):
         HeatPumpCycle(CycleInput(t_evap_c=45.0, t_cond_c=40.0))
 
-    # Nieznany czynnik
     with pytest.raises(ValueError, match="Nieobsługiwany czynnik"):
         HeatPumpCycle(CycleInput(fluid="UNKNOWN_FLUID"))
 
@@ -82,6 +109,8 @@ def test_scipy_optimize_subcooling_and_grid():
     opt = optimize_subcooling(base, pinch_sink_temp_c=32.0)
     assert 0.0 <= opt["optimal_subcooling_k"] <= 20.0
     assert opt["max_cop"] > 3.0
+    assert len(opt["curve_sc_k"]) == 15
+    assert len(opt["curve_cop"]) == 15
 
     grid = run_sensitivity_grid(
         base, t_evap_range=(-10.0, 10.0), t_cond_range=(35.0, 50.0), n_points=4
@@ -91,16 +120,22 @@ def test_scipy_optimize_subcooling_and_grid():
 
 
 def test_plotting_diagrams():
-    """Sprawdza generowanie wykresów Plotly (log(p)-h, T-s oraz mapy COP)."""
+    """Sprawdza generowanie wszystkich wykresów Plotly (schemat, bilans, log(p)-h, T-s, mapa COP)."""
     inp = CycleInput(fluid="R290", t_evap_c=0.0, t_cond_c=45.0)
     res = HeatPumpCycle(inp).solve()
 
+    fig_schematic = create_cycle_schematic(res)
+    fig_balance = create_energy_balance_bar(res)
     fig_ph = create_ph_diagram(res.plot_data)
     fig_ts = create_ts_diagram(res.plot_data)
     grid = run_sensitivity_grid(inp, n_points=4)
     fig_contour = create_cop_contour_plot(grid, inp.t_evap_c, inp.t_cond_c)
+    opt = optimize_subcooling(inp, pinch_sink_temp_c=32.0)
+    fig_subcool = create_subcooling_curve_plot(opt)
 
+    assert len(fig_schematic.data) >= 5
+    assert len(fig_balance.data) == 3
     assert len(fig_ph.data) == 3
     assert len(fig_ts.data) == 3
     assert len(fig_contour.data) == 2
-
+    assert len(fig_subcool.data) == 2

@@ -73,12 +73,12 @@ def optimize_subcooling(
     upper_bound = min(
         max_subcooling_k,
         max(1.0, base_input.t_cond_c - base_input.t_evap_c - 3.0),
-        max(1.0, base_input.t_cond_c - pinch_sink_temp_c),
+        max(1.0, base_input.t_cond_c - pinch_sink_temp_c + 5.0),
     )
 
-    def neg_cop(sc_k: float) -> float:
-        # Uwzględnienie kary na podniesienie temperatury skraplania przy zbyt dużym dochłodzeniu
-        # względem temperatury powrotu dolnego/górnego źródła
+    def eval_cop(sc_k: float) -> float:
+        # Gdy dochłodzenie próbuje zejść poniżej (T_powrotu + 2 K pinch),
+        # konieczne jest podniesienie temperatury skraplania, co obniża COP.
         effective_t_cond = max(base_input.t_cond_c, pinch_sink_temp_c + sc_k + 2.0)
         trial = replace(
             base_input,
@@ -86,16 +86,24 @@ def optimize_subcooling(
             t_cond_c=float(effective_t_cond),
         )
         res = HeatPumpCycle(trial).solve()
-        return -res.cop_heating
+        return res.cop_heating
 
-    opt = minimize_scalar(neg_cop, bounds=(0.0, upper_bound), method="bounded")
+    opt = minimize_scalar(
+        lambda sc: -eval_cop(sc), bounds=(0.0, upper_bound), method="bounded"
+    )
     best_sc = float(opt.x)
     best_cop = float(-opt.fun)
+
+    # Krzywa poglądowa COP(ΔT_sc) dla wykresu edukacyjnego
+    sc_samples = np.linspace(0.0, upper_bound, 15)
+    cop_samples = [eval_cop(float(sc)) for sc in sc_samples]
 
     return {
         "optimal_subcooling_k": best_sc,
         "max_cop": best_cop,
         "iterations": int(opt.nfev),
+        "curve_sc_k": sc_samples.tolist(),
+        "curve_cop": cop_samples,
     }
 
 
@@ -110,8 +118,14 @@ def run_sensitivity_grid(
     oraz buduje interpolator `scipy.interpolate.RegularGridInterpolator` do szybkiego
     zagęszczenia mapy sprawności.
     """
-    t_evap_vals = np.linspace(t_evap_range[0], t_evap_range[1], n_points)
-    t_cond_vals = np.linspace(t_cond_range[0], t_cond_range[1], n_points)
+    limits = get_fluid_limits(base_input.fluid)
+    safe_evap_min = max(t_evap_range[0], limits["T_min_C"] + 2.0)
+    safe_cond_max = min(t_cond_range[1], limits["T_crit_C"] - 3.0)
+    safe_cond_min = max(t_cond_range[0], safe_evap_min + 5.0)
+    safe_evap_max = min(t_evap_range[1], safe_cond_min - 3.0)
+
+    t_evap_vals = np.linspace(safe_evap_min, safe_evap_max, n_points)
+    t_cond_vals = np.linspace(safe_cond_min, safe_cond_max, n_points)
 
     cop_grid = np.zeros((n_points, n_points))
     p_comp_grid = np.zeros((n_points, n_points))
@@ -119,8 +133,7 @@ def run_sensitivity_grid(
     records = []
     for i, t_ev in enumerate(t_evap_vals):
         for j, t_cd in enumerate(t_cond_vals):
-            # Bezpieczny odstęp dla dochłodzenia
-            sc = min(base_input.subcooling_k, max(0.0, t_cd - t_ev - 5.0))
+            sc = min(base_input.subcooling_k, max(0.0, t_cd - t_ev - 3.0))
             trial = replace(
                 base_input,
                 t_evap_c=float(t_ev),
@@ -140,13 +153,12 @@ def run_sensitivity_grid(
                 }
             )
 
-    # Interpolacja SciPy na gęstszą siatkę do wykresu konturowego
     interp_cop = RegularGridInterpolator(
         (t_evap_vals, t_cond_vals), cop_grid, method="cubic"
     )
 
-    fine_evap = np.linspace(t_evap_range[0], t_evap_range[1], 35)
-    fine_cond = np.linspace(t_cond_range[0], t_cond_range[1], 35)
+    fine_evap = np.linspace(safe_evap_min, safe_evap_max, 35)
+    fine_cond = np.linspace(safe_cond_min, safe_cond_max, 35)
     ee, cc = np.meshgrid(fine_evap, fine_cond, indexing="ij")
     fine_cop = interp_cop((ee, cc))
 

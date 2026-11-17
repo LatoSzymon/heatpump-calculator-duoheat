@@ -1,4 +1,4 @@
-"""Funkcje pomocnicze, konwersje jednostek oraz baza czynników chłodniczych."""
+"""Funkcje pomocnicze, konwersje jednostek, presety scenariuszy oraz baza czynników chłodniczych."""
 
 from dataclasses import dataclass
 from typing import Dict
@@ -17,6 +17,22 @@ class RefrigerantInfo:
     description: str
 
 
+@dataclass(frozen=True)
+class ScenarioPreset:
+    """Gotowy scenariusz pracy pompy ciepła do celów edukacyjnych."""
+
+    id: str
+    label: str
+    fluid: str
+    t_evap_c: float
+    t_cond_c: float
+    superheat_k: float
+    subcooling_k: float
+    eta_s: float
+    q_cond_kw: float
+    explanation: str
+
+
 REFRIGERANTS: Dict[str, RefrigerantInfo] = {
     "R290": RefrigerantInfo(
         code="R290",
@@ -24,7 +40,7 @@ REFRIGERANTS: Dict[str, RefrigerantInfo] = {
         chemical_formula="C3H8",
         safety_group="A3",
         gwp=3,
-        description="Naturalny węglowodór o bardzo niskim GWP i doskonałych własnościach termodynamicznych.",
+        description="Naturalny węglowodór o bardzo niskim GWP i doskonałych własnościach termodynamicznych (wysoka palność A3).",
     ),
     "R32": RefrigerantInfo(
         code="R32",
@@ -32,7 +48,7 @@ REFRIGERANTS: Dict[str, RefrigerantInfo] = {
         chemical_formula="CH2F2",
         safety_group="A2L",
         gwp=675,
-        description="Popularny czynnik w nowoczesnych pompach ciepła powietrze-woda i klimatyzatorach.",
+        description="Popularny czynnik w nowoczesnych pompach ciepła powietrze-woda i klimatyzatorach (niska palność A2L).",
     ),
     "R134a": RefrigerantInfo(
         code="R134a",
@@ -40,7 +56,7 @@ REFRIGERANTS: Dict[str, RefrigerantInfo] = {
         chemical_formula="CF3CH2F",
         safety_group="A1",
         gwp=1430,
-        description="Klasyczny czynnik HFC stosowany w średnio- i wysokotemperaturowych układach.",
+        description="Klasyczny czynnik HFC stosowany w średnio- i wysokotemperaturowych układach (niepalny A1).",
     ),
     "R410A": RefrigerantInfo(
         code="R410A",
@@ -48,7 +64,7 @@ REFRIGERANTS: Dict[str, RefrigerantInfo] = {
         chemical_formula="CH2F2 / CHF2CF3 (50/50%)",
         safety_group="A1",
         gwp=2088,
-        description="Zeotropowa mieszanina o wysokim ciśnieniu roboczym, szeroko stosowana w starszych układach.",
+        description="Bliskoazeotropowa mieszanina o wysokim ciśnieniu roboczym, szeroko stosowana w starszych układach.",
     ),
     "R1234yf": RefrigerantInfo(
         code="R1234yf",
@@ -72,7 +88,71 @@ REFRIGERANTS: Dict[str, RefrigerantInfo] = {
         chemical_formula="NH3",
         safety_group="B2L",
         gwp=0,
-        description="Przemysłowy czynnik naturalny o bardzo wysokim cieple parowania.",
+        description="Przemysłowy czynnik naturalny o bardzo wysokim cieple parowania i wysokiej temperaturze tłoczenia.",
+    ),
+}
+
+
+SCENARIO_PRESETS: Dict[str, ScenarioPreset] = {
+    "air_floor_spring": ScenarioPreset(
+        id="air_floor_spring",
+        label="Powietrzna PC + podłogówka (wiosna/jesień, +7°C)",
+        fluid="R290",
+        t_evap_c=2.0,
+        t_cond_c=35.0,
+        superheat_k=5.0,
+        subcooling_k=4.0,
+        eta_s=0.78,
+        q_cond_kw=10.0,
+        explanation=(
+            "Optymalne warunki pracy: mała różnica temperatur między powietrzem zewnętrznym (+7°C, parowanie +2°C) "
+            "a ogrzewaniem podłogowym (~30–35°C) zapewnia bardzo wysoki współczynnik COP."
+        ),
+    ),
+    "air_radiators_winter": ScenarioPreset(
+        id="air_radiators_winter",
+        label="Powietrzna PC + grzejniki (mroźna zima, -7°C)",
+        fluid="R290",
+        t_evap_c=-12.0,
+        t_cond_c=55.0,
+        superheat_k=6.0,
+        subcooling_k=5.0,
+        eta_s=0.74,
+        q_cond_kw=10.0,
+        explanation=(
+            "Trudne warunki zimowe: duży skok temperatury (ΔT = 67 K) między zimnym powietrzem (-7°C, parowanie -12°C) "
+            "a gorącymi grzejnikami (55°C) zmusza sprężarkę do cięższej pracy i wyraźnie obniża COP."
+        ),
+    ),
+    "ground_floor": ScenarioPreset(
+        id="ground_floor",
+        label="Gruntowa PC + podłogówka (stabilne źródło)",
+        fluid="R32",
+        t_evap_c=0.0,
+        t_cond_c=35.0,
+        superheat_k=5.0,
+        subcooling_k=5.0,
+        eta_s=0.80,
+        q_cond_kw=12.0,
+        explanation=(
+            "Grunt na głębokości kilku metrów ma stabilną temperaturę przez cały rok, dzięki czemu parownik "
+            "pracuje stabilnie w okolicach 0°C nawet w środku zimy."
+        ),
+    ),
+    "dhw_heating": ScenarioPreset(
+        id="dhw_heating",
+        label="Grzanie ciepłej wody użytkowej (CWU 55°C)",
+        fluid="R290",
+        t_evap_c=2.0,
+        t_cond_c=60.0,
+        superheat_k=5.0,
+        subcooling_k=5.0,
+        eta_s=0.75,
+        q_cond_kw=8.0,
+        explanation=(
+            "Podgrzewanie wody w zasobniku CWU do 55°C wymaga wysokiej temperatury skraplania (~60°C), "
+            "co podnosi ciśnienie tłoczenia i obniża sprawność w porównaniu z ogrzewaniem podłogowym."
+        ),
     ),
 }
 
