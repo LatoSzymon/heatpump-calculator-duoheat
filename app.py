@@ -357,7 +357,7 @@ except Exception as exc:
     simulation_error = f"Wystąpił nieoczekiwany błąd obliczeniowy: {exc}"
 
 if simulation_error or result is None:
-    st.error(f"⚠️ {simulation_error}")
+    st.error(f"{simulation_error}")
     st.info("Skoryguj parametry w panelu bocznym lub wybierz jeden z gotowych scenariuszy.")
 else:
     # --- KARTY KPI (responsywna siatka CSS: 6 kolumn na desktopie, 2 na mobile) ---
@@ -503,7 +503,7 @@ else:
 
     # === ZAKŁADKA 2: WYKRESY TERMODYNAMICZNE ===
     with tab_charts:
-        with st.expander("💡 Jak czytać wykres Molliera log(p)-h oraz wykres T-s? (kliknij, aby rozwinąć)", expanded=False):
+        with st.expander("Jak czytać wykres Molliera log(p)-h oraz wykres T-s?", expanded=False):
             st.markdown(
                 """
                 - **Szary „dzwon” (krzywa nasycenia):** oddziela obszar cieczy (po lewej), mieszaniny wrzącej cieczy i pary (w środku) oraz pary przegrzanej (po prawej).

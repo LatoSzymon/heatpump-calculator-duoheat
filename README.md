@@ -1,4 +1,4 @@
-# 🔥 Kalkulator i Symulator Obiegu Pompy Ciepła (`heatpump-calculator`)
+# Kalkulator i Symulator Obiegu Pompy Ciepła (`heatpump-calculator`)
 
 Interaktywny kalkulator jednostopniowego obiegu sprężarkowej pompy ciepła z przegrzaniem i dochłodzeniem, zbudowany w języku Python przy użyciu bibliotek:
 - **TESPy** (`tespy`) — modelowanie topologii układu i rozwiązywanie nieliniowego układu równań bilansu masy i energii,
@@ -8,7 +8,7 @@ Interaktywny kalkulator jednostopniowego obiegu sprężarkowej pompy ciepła z p
 
 ---
 
-## 🚀 Szybki start
+##  Szybki start
 
 ### 1. Aktywacja środowiska wirtualnego i instalacja zależności
 
@@ -32,7 +32,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📐 Struktura projektu
+## Struktura projektu
 
 - `src/cycle_model.py` — klasa `HeatPumpCycle` budująca i rozwiązująca obieg w `TESPy` (`CycleCloser`, `Compressor`, `SimpleHeatExchanger`, `Valve`).
 - `src/optimizer.py` — algorytmy numeryczne oparte na `SciPy` (`root_scalar`, `minimize_scalar`, `RegularGridInterpolator`).
@@ -40,3 +40,4 @@ pip install -r requirements.txt
 - `src/utils.py` — baza czynników chłodniczych, konwersje jednostek i walidacja ograniczeń fizycznych (punkt krytyczny).
 - `app.py` — interfejs użytkownika w `Streamlit`.
 - `tests/test_cycle_model.py` — testy jednostkowe bilansu energii i modułu `SciPy`.
+- `DOCS.md` — **pełna dokumentacja techniczna i edukacyjna** dla nowych pracowników (omówienie fizyki, bibliotek, funkcji i architektury).
