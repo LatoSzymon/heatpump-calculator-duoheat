@@ -20,10 +20,14 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
             '• Kalkulator Obiegu Pompy Ciepła (TESPy + CoolProp + SciPy)'
             "</div>"
         ),
-        # Language switcher
+        # Language switcher & Navigation
         "lang_label": "Język / Language",
-        "lang_pl": "🇵🇱 Polski",
-        "lang_en": "🇬🇧 English",
+        "lang_pl": "Polski (PL)",
+        "lang_en": "English (EN)",
+        "nav_header": "Nawigacja",
+        "nav_simulation": "Symulacja",
+        "nav_education": "Edukacja",
+        "edu_lessons_expander": "Lekcje (wybierz temat)",
         # Sidebar
         "sidebar_header": "Konfiguracja obiegu",
         "preset_label": "Gotowy scenariusz (szybki start)",
@@ -56,7 +60,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "err_unexpected": "Wystąpił nieoczekiwany błąd obliczeniowy: {exc}",
         "err_hint": "Skoryguj parametry w panelu bocznym lub wybierz jeden z gotowych scenariuszy.",
         "warn_high_t_discharge": (
-            "⚠️ Uwaga inżynierska: Wysoka temperatura tłoczenia sprężarki (**{t_dis:.1f} °C**). "
+            "Uwaga inżynierska: Wysoka temperatura tłoczenia sprężarki (**{t_dis:.1f} °C**). "
             "W rzeczywistym układzie powyżej ~115–120 °C olej smarny ulega przegrzaniu — rozważ obniżenie `T_cond`, "
             "zmniejszenie przegrzania lub zmianę czynnika."
         ),
@@ -75,7 +79,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "tab_charts": "Wykresy log(p)-h i T-s",
         "tab_table": "Punkty i bilans",
         "tab_scipy": "Optymalizacja (SciPy)",
-        "tab_education": "🎓 Edukacja",
+        "tab_education": "Edukacja",
         "tab_glossary": "Słowniczek",
         # Tab 1: Mechanics
         "mech_title": "Jak działa pompa ciepła? (Obieg na żywo)",
@@ -135,7 +139,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "err_ts": "Błąd generowania wykresu T-s: {exc}",
         # Tab 3: Table & Balance
         "table_title": "Parametry termodynamiczne w punktach węzłowych (1–4)",
-        "download_csv": "📥 Pobierz tabelę stanów jako CSV",
+        "download_csv": "Pobierz tabelę stanów jako CSV",
         "heat_struct_title": "Struktura wymiany ciepła w wymiennikach oraz bilans TESPy",
         "cond_breakdown_title": "**Skraplacz (oddawanie ciepła do budynku):**",
         "cond_desup": "- Schładzanie gorącej pary (desuperheating): **{val:.2f} kW** ({pct:.1f}%)",
@@ -203,22 +207,24 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
             "  - `B2L` — toksyczne, trudno palne (np. R717 amoniak — układy przemysłowe)"
         ),
         # Education tab UI
-        "edu_title": "Akademia Pompy Ciepła — Interaktywne Lekcje i Testy",
+        "edu_title": "Akademia Pompy Ciepła — Lekcje i Interaktywne Testy",
         "edu_intro": (
             "Poznaj działanie każdego elementu i znaczenie najważniejszych współczynników obiegu. "
-            "Każda lekcja zawiera **teorię**, **żywe laboratorium obliczeniowe (TESPy)** oraz **krótki test sprawdzający** z wyjaśnieniem."
+            "Wybierz lekcję z paska bocznego, przeanalizuj **teorię i ilustrację wpływu (TESPy)**, a następnie sprawdź wiedzę w **sekcji testu**."
         ),
-        "edu_progress_label": "Twój postęp w kursie: **{done} / {total}** ukończonych lekcji (zaliczono poprawnie przynajmniej po 1 pytaniu lub cały test)",
+        "edu_progress_label": "Postęp w kursie: **{done} / {total}** ukończonych lekcji",
         "edu_select_lesson": "Wybierz lekcję:",
-        "edu_theory_header": "📘 1. Teoria i fizyka procesu",
-        "edu_lab_header": "🔬 2. Mini-laboratorium na żywo (TESPy)",
-        "edu_quiz_header": "📝 3. Interaktywny test wiedzy (sprawdź i zobacz wyjaśnienie)",
+        "edu_tab_theory_lab": "Teoria i ilustracja wpływu (TESPy)",
+        "edu_tab_quiz": "Test wiedzy (Quiz)",
+        "edu_theory_header": "1. Teoria i fizyka procesu",
+        "edu_lab_header": "2. Ilustracja wpływu na działanie pompy ciepła (TESPy)",
+        "edu_quiz_header": "Test wiedzy — sprawdź się i zobacz wyjaśnienie",
         "edu_check_btn": "Sprawdź odpowiedzi",
         "edu_reset_btn": "Wyczyść odpowiedzi",
         "edu_score_banner": "Wynik lekcji: **{score} / {total}** poprawnych odpowiedzi",
         "edu_perfect": "Świetnie! Opanowałeś materiał z tej lekcji.",
-        "edu_answer_correct": "✅ Poprawna odpowiedź!",
-        "edu_answer_wrong": "❌ Niepoprawna odpowiedź. Prawidłowa to: **{correct}**",
+        "edu_answer_correct": "[Poprawna odpowiedź]",
+        "edu_answer_wrong": "[Błędna odpowiedź] Prawidłowa to: **{correct}**",
         "edu_explanation_prefix": "**Wyjaśnienie:**",
         "edu_lab_metric_cop": "COP grzewcze",
         "edu_lab_metric_t2": "Temp. tłoczenia T₂",
@@ -321,10 +327,14 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
             '• Heat Pump Cycle Calculator (TESPy + CoolProp + SciPy)'
             "</div>"
         ),
-        # Language switcher
+        # Language switcher & Navigation
         "lang_label": "Language / Język",
-        "lang_pl": "🇵🇱 Polski",
-        "lang_en": "🇬🇧 English",
+        "lang_pl": "Polski (PL)",
+        "lang_en": "English (EN)",
+        "nav_header": "Navigation",
+        "nav_simulation": "Simulation",
+        "nav_education": "Education",
+        "edu_lessons_expander": "Lessons (choose topic)",
         # Sidebar
         "sidebar_header": "Cycle Configuration",
         "preset_label": "Scenario preset (quick start)",
@@ -357,7 +367,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "err_unexpected": "An unexpected calculation error occurred: {exc}",
         "err_hint": "Adjust parameters in the sidebar or select one of the preset scenarios.",
         "warn_high_t_discharge": (
-            "⚠️ Engineering note: High compressor discharge temperature (**{t_dis:.1f} °C**). "
+            "Engineering note: High compressor discharge temperature (**{t_dis:.1f} °C**). "
             "Above ~115–120 °C lubricating oil degrades in real systems — consider lowering `T_cond`, "
             "reducing superheat, or changing the refrigerant."
         ),
@@ -376,7 +386,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "tab_charts": "log(p)-h & T-s Diagrams",
         "tab_table": "State Points & Balance",
         "tab_scipy": "Optimization (SciPy)",
-        "tab_education": "🎓 Education",
+        "tab_education": "Education",
         "tab_glossary": "Glossary",
         # Tab 1: Mechanics
         "mech_title": "How does a heat pump work? (Live cycle)",
@@ -436,7 +446,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "err_ts": "Error generating T-s diagram: {exc}",
         # Tab 3: Table & Balance
         "table_title": "Thermodynamic Properties at State Points (1–4)",
-        "download_csv": "📥 Download state table as CSV",
+        "download_csv": "Download state table as CSV",
         "heat_struct_title": "Heat Exchanger Breakdown & TESPy Energy Balance",
         "cond_breakdown_title": "**Condenser (heat delivered to building):**",
         "cond_desup": "- Hot vapor desuperheating: **{val:.2f} kW** ({pct:.1f}%)",
@@ -504,22 +514,24 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
             "  - `B2L` — toxic, mildly flammable (e.g. R717 ammonia — industrial systems)"
         ),
         # Education tab UI
-        "edu_title": "Heat Pump Academy — Interactive Lessons & Quizzes",
+        "edu_title": "Heat Pump Academy — Lessons & Interactive Quizzes",
         "edu_intro": (
             "Learn how each component works and what the key thermodynamic coefficients mean. "
-            "Each lesson includes **theory**, a **live calculation lab (TESPy)**, and a **short interactive quiz** with full explanations."
+            "Select a lesson from the sidebar, explore the **theory and live impact illustration (TESPy)**, then test your knowledge in the **quiz section**."
         ),
-        "edu_progress_label": "Course progress: **{done} / {total}** lessons completed (at least 1 question answered correctly)",
+        "edu_progress_label": "Course progress: **{done} / {total}** lessons completed",
         "edu_select_lesson": "Select a lesson:",
-        "edu_theory_header": "📘 1. Theory & Physics",
-        "edu_lab_header": "🔬 2. Live Mini-Lab (TESPy)",
-        "edu_quiz_header": "📝 3. Interactive Knowledge Test (check & read explanation)",
+        "edu_tab_theory_lab": "Theory & Impact Illustration (TESPy)",
+        "edu_tab_quiz": "Knowledge Test (Quiz)",
+        "edu_theory_header": "1. Theory & Physics",
+        "edu_lab_header": "2. Live Impact Illustration (TESPy)",
+        "edu_quiz_header": "Knowledge Test — check your answers and read the explanation",
         "edu_check_btn": "Check answers",
         "edu_reset_btn": "Clear answers",
         "edu_score_banner": "Lesson score: **{score} / {total}** correct answers",
         "edu_perfect": "Great job! You mastered this lesson.",
-        "edu_answer_correct": "✅ Correct answer!",
-        "edu_answer_wrong": "❌ Incorrect. The correct answer is: **{correct}**",
+        "edu_answer_correct": "[Correct answer]",
+        "edu_answer_wrong": "[Incorrect] The correct answer is: **{correct}**",
         "edu_explanation_prefix": "**Explanation:**",
         "edu_lab_metric_cop": "Heating COP",
         "edu_lab_metric_t2": "Discharge temp. T₂",

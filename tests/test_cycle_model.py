@@ -65,6 +65,10 @@ def test_multiple_refrigerants(fluid: str):
     assert res.cop_heating > 2.5
     assert res.pressure_ratio > 1.5
     assert res.mass_flow_kg_s > 0.0
+    fig_ph = create_ph_diagram(res.plot_data)
+    fig_ts = create_ts_diagram(res.plot_data)
+    assert len(fig_ph.data) == 3
+    assert len(fig_ts.data) == 3
 
 
 def test_scenario_presets_solve():
@@ -165,7 +169,22 @@ def test_i18n_pl_en_parity_and_english_outputs():
 
     assert get_refrigerant_text("R290", "en")["name"] == "R290 (Propane)"
     assert "Air-source HP" in get_preset_text("air_floor_spring", "en")["label"]
-    assert t("tab_education", "en") == "🎓 Education"
+    assert t("tab_education", "en") == "Education"
+
+
+def test_no_emojis_in_codebase():
+    """Weryfikuje całkowity brak emotek w kodzie źródłowym i tłumaczeniach."""
+    import pathlib
+    import re
+
+    emoji_pattern = re.compile(
+        "[\U0001F300-\U0001FAFF\u2600-\u27BF]"
+    )
+    files = [pathlib.Path("app.py")] + list(pathlib.Path("src").rglob("*.py"))
+    for file_path in files:
+        content = file_path.read_text(encoding="utf-8")
+        matches = emoji_pattern.findall(content)
+        assert not matches, f"Znaleziono emotki w {file_path}: {matches}"
 
 
 def test_education_lessons_and_quizzes_integrity():

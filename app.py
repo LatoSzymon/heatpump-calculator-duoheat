@@ -11,8 +11,9 @@ from src.optimizer import (
     run_sensitivity_grid,
 )
 from src.ui.sidebar import render_sidebar
+from src.ui.sim_controls import init_cycle_state, render_simulation_controls
 from src.ui.styles import inject_custom_css
-from src.ui.tab_education import render_education_tab
+from src.ui.tab_education import render_education_page
 from src.ui.tabs_simulation import (
     render_charts_tab,
     render_glossary_tab,
@@ -24,7 +25,6 @@ from src.ui.tabs_simulation import (
 
 st.set_page_config(
     page_title=t("page_title", st.session_state.get("lang", "pl")),
-    page_icon="🔥",
     layout="wide",
     initial_sidebar_state="auto",
 )
@@ -71,84 +71,86 @@ def run_sensitivity_grid_cached(
     )
 
 
-# --- PANEL BOCZNY (JĘZYK + PARAMETRY WEJŚCIOWE) ---
-lang, cycle_input, limits = render_sidebar()
-cycle_dict = asdict(cycle_input)
+# --- PASEK BOCZNY (JĘZYK + NAWIGACJA) ---
+lang, active_section = render_sidebar()
+init_cycle_state()
 
 # --- NAGŁÓWEK ---
 st.title(t("app_title", lang))
 st.markdown(t("app_subtitle", lang))
 
-# --- URUCHOMIENIE SYMULACJI TESPy ---
-result: CycleResult | None = None
-simulation_error: str | None = None
-try:
-    result = solve_cycle_cached(cycle_dict, lang=lang)
-except ValueError as exc:
-    simulation_error = t("err_invalid_params", lang, exc=exc)
-except RuntimeError as exc:
-    simulation_error = t("err_tespy_converge", lang, exc=exc)
-except Exception as exc:
-    simulation_error = t("err_unexpected", lang, exc=exc)
-
-if simulation_error or result is None:
-    st.error(simulation_error)
-    st.info(t("err_hint", lang))
-    st.divider()
-    tab_edu_only, tab_gloss_only = st.tabs(
-        [t("tab_education", lang), t("tab_glossary", lang)]
+if active_section == "education":
+    base_input = CycleInput(
+        fluid=st.session_state.get("fluid_code", "R290"),
+        t_evap_c=st.session_state.get("t_evap_c", 2.0),
+        t_cond_c=st.session_state.get("t_cond_c", 35.0),
+        superheat_k=st.session_state.get("superheat_k", 5.0),
+        subcooling_k=st.session_state.get("subcooling_k", 4.0),
+        eta_s=st.session_state.get("eta_s", 0.78),
+        q_cond_kw=st.session_state.get("q_cond_kw", 10.0),
     )
-    with tab_edu_only:
-        render_education_tab(cycle_input, lang)
-    with tab_gloss_only:
-        render_glossary_tab(lang)
+    render_education_page(base_input, lang)
 else:
-    render_kpi_cards(result, lang)
-    st.divider()
+    # --- PODSTRONA SYMULACJA: KONFIGURACJA OBIEGU + KPI + ZAKŁADKI ---
+    cycle_input, limits = render_simulation_controls(lang)
+    cycle_dict = asdict(cycle_input)
 
-    (
-        tab_mechanics,
-        tab_charts,
-        tab_table,
-        tab_scipy,
-        tab_education,
-        tab_glossary,
-    ) = st.tabs(
-        [
-            t("tab_mechanics", lang),
-            t("tab_charts", lang),
-            t("tab_table", lang),
-            t("tab_scipy", lang),
-            t("tab_education", lang),
-            t("tab_glossary", lang),
-        ]
-    )
+    result: CycleResult | None = None
+    simulation_error: str | None = None
+    try:
+        result = solve_cycle_cached(cycle_dict, lang=lang)
+    except ValueError as exc:
+        simulation_error = t("err_invalid_params", lang, exc=exc)
+    except RuntimeError as exc:
+        simulation_error = t("err_tespy_converge", lang, exc=exc)
+    except Exception as exc:
+        simulation_error = t("err_unexpected", lang, exc=exc)
 
-    with tab_mechanics:
-        render_mechanics_tab(result, cycle_input, lang)
+    if simulation_error or result is None:
+        st.error(simulation_error)
+        st.info(t("err_hint", lang))
+    else:
+        render_kpi_cards(result, lang)
+        st.divider()
 
-    with tab_charts:
-        render_charts_tab(result, lang)
-
-    with tab_table:
-        render_table_tab(result, cycle_input, lang)
-
-    with tab_scipy:
-        render_scipy_tab(
-            cycle_dict=cycle_dict,
-            cycle_input=cycle_input,
-            limits=limits,
-            lang=lang,
-            find_evap_temp_cached=find_evap_temp_cached,
-            optimize_subcooling_cached=optimize_subcooling_cached,
-            run_sensitivity_grid_cached=run_sensitivity_grid_cached,
+        (
+            tab_mechanics,
+            tab_charts,
+            tab_table,
+            tab_scipy,
+            tab_glossary,
+        ) = st.tabs(
+            [
+                t("tab_mechanics", lang),
+                t("tab_charts", lang),
+                t("tab_table", lang),
+                t("tab_scipy", lang),
+                t("tab_glossary", lang),
+            ]
         )
 
-    with tab_education:
-        render_education_tab(cycle_input, lang)
+        with tab_mechanics:
+            render_mechanics_tab(result, cycle_input, lang)
 
-    with tab_glossary:
-        render_glossary_tab(lang)
+        with tab_charts:
+            render_charts_tab(result, lang)
+
+        with tab_table:
+            render_table_tab(result, cycle_input, lang)
+
+        with tab_scipy:
+            render_scipy_tab(
+                cycle_dict=cycle_dict,
+                cycle_input=cycle_input,
+                limits=limits,
+                lang=lang,
+                find_evap_temp_cached=find_evap_temp_cached,
+                optimize_subcooling_cached=optimize_subcooling_cached,
+                run_sensitivity_grid_cached=run_sensitivity_grid_cached,
+            )
+
+        with tab_glossary:
+            render_glossary_tab(lang)
 
 # --- STOPKA ---
 st.divider()

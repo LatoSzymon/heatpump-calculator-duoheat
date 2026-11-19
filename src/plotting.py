@@ -51,8 +51,8 @@ def _compute_saturation_dome(fluid: str, n_points: int = 120) -> Dict[str, Any]:
         raise ValueError(f"Nie udało się wyznaczyć krzywej nasycenia dla czynnika {fluid}.")
 
     p_crit = CP.PropsSI("pcrit", fluid) / 1e5
-    h_crit = CP.PropsSI("H", "T", t_crit - 0.01, "Q", 0.5, fluid) / 1e3
-    s_crit = CP.PropsSI("S", "T", t_crit - 0.01, "Q", 0.5, fluid) / 1e3
+    h_crit = 0.5 * (h_liq[-1] + h_vap[-1])
+    s_crit = 0.5 * (s_liq[-1] + s_vap[-1])
 
     h_dome = np.array(h_liq + [h_crit] + h_vap[::-1])
     p_dome = np.array(p_liq + [p_crit] + p_vap[::-1])
