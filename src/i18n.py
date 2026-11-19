@@ -9,15 +9,11 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         # App & Header
         "page_title": "Kalkulator Obiegu Pompy Ciepła — Instytut Naukowy",
         "app_title": "Kalkulator i Symulator Obiegu Pompy Ciepła",
-        "app_subtitle": (
-            "Narzędzie szkoleniowo-badawcze oparte na **TESPy**, **CoolProp** i **SciPy**. "
-            "Zmieniaj parametry w panelu bocznym, aby na żywo obserwować, jak zmienia się praca sprężarki, "
-            "ciśnienia oraz współczynnik efektywności **COP**."
-        ),
+        "app_subtitle": "Narzędzie szkoleniowo-badawcze (TESPy, CoolProp i SciPy).",
         "footer_html": (
             '<div class="app-footer">'
             'Autor aplikacji: <a href="https://github.com/LatoSzymon" target="_blank">Szymon Lato</a> '
-            '• Kalkulator Obiegu Pompy Ciepła (TESPy + CoolProp + SciPy)'
+            '• Kalkulator Obiegu Pompy Ciepła • Projekt <a href="https://duoheat.pl" target="_blank">DUOHEAT</a>'
             "</div>"
         ),
         # Language switcher & Navigation
@@ -207,25 +203,14 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
             "  - `B2L` — toksyczne, trudno palne (np. R717 amoniak — układy przemysłowe)"
         ),
         # Education tab UI
-        "edu_title": "Akademia Pompy Ciepła — Lekcje i Interaktywne Testy",
+        "edu_title": "Akademia Pompy Ciepła — Lekcje i Ilustracje Obiegu",
         "edu_intro": (
             "Poznaj działanie każdego elementu i znaczenie najważniejszych współczynników obiegu. "
-            "Wybierz lekcję z paska bocznego, przeanalizuj **teorię i ilustrację wpływu (TESPy)**, a następnie sprawdź wiedzę w **sekcji testu**."
+            "Wybierz lekcję z paska bocznego, aby przeanalizować **teorię** oraz **interaktywną ilustrację wpływu (TESPy)**."
         ),
-        "edu_progress_label": "Postęp w kursie: **{done} / {total}** ukończonych lekcji",
         "edu_select_lesson": "Wybierz lekcję:",
-        "edu_tab_theory_lab": "Teoria i ilustracja wpływu (TESPy)",
-        "edu_tab_quiz": "Test wiedzy (Quiz)",
         "edu_theory_header": "1. Teoria i fizyka procesu",
         "edu_lab_header": "2. Ilustracja wpływu na działanie pompy ciepła (TESPy)",
-        "edu_quiz_header": "Test wiedzy — sprawdź się i zobacz wyjaśnienie",
-        "edu_check_btn": "Sprawdź odpowiedzi",
-        "edu_reset_btn": "Wyczyść odpowiedzi",
-        "edu_score_banner": "Wynik lekcji: **{score} / {total}** poprawnych odpowiedzi",
-        "edu_perfect": "Świetnie! Opanowałeś materiał z tej lekcji.",
-        "edu_answer_correct": "[Poprawna odpowiedź]",
-        "edu_answer_wrong": "[Błędna odpowiedź] Prawidłowa to: **{correct}**",
-        "edu_explanation_prefix": "**Wyjaśnienie:**",
         "edu_lab_metric_cop": "COP grzewcze",
         "edu_lab_metric_t2": "Temp. tłoczenia T₂",
         "edu_lab_metric_pcomp": "Moc sprężarki P_el",
@@ -316,15 +301,11 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         # App & Header
         "page_title": "Heat Pump Cycle Calculator — Research Institute",
         "app_title": "Heat Pump Cycle Calculator & Simulator",
-        "app_subtitle": (
-            "Training and research tool powered by **TESPy**, **CoolProp**, and **SciPy**. "
-            "Adjust parameters in the sidebar to observe live changes in compressor work, "
-            "pressures, and the Coefficient of Performance (**COP**)."
-        ),
+        "app_subtitle": "Training and research tool (TESPy, CoolProp and SciPy).",
         "footer_html": (
             '<div class="app-footer">'
             'Author: <a href="https://github.com/LatoSzymon" target="_blank">Szymon Lato</a> '
-            '• Heat Pump Cycle Calculator (TESPy + CoolProp + SciPy)'
+            '• Heat Pump Cycle Calculator • <a href="https://duoheat.pl" target="_blank">DUOHEAT</a> Project'
             "</div>"
         ),
         # Language switcher & Navigation
@@ -514,25 +495,14 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
             "  - `B2L` — toxic, mildly flammable (e.g. R717 ammonia — industrial systems)"
         ),
         # Education tab UI
-        "edu_title": "Heat Pump Academy — Lessons & Interactive Quizzes",
+        "edu_title": "Heat Pump Academy — Lessons & Cycle Illustrations",
         "edu_intro": (
             "Learn how each component works and what the key thermodynamic coefficients mean. "
-            "Select a lesson from the sidebar, explore the **theory and live impact illustration (TESPy)**, then test your knowledge in the **quiz section**."
+            "Select a lesson from the sidebar to explore **theory** and **live impact illustrations (TESPy)**."
         ),
-        "edu_progress_label": "Course progress: **{done} / {total}** lessons completed",
         "edu_select_lesson": "Select a lesson:",
-        "edu_tab_theory_lab": "Theory & Impact Illustration (TESPy)",
-        "edu_tab_quiz": "Knowledge Test (Quiz)",
         "edu_theory_header": "1. Theory & Physics",
         "edu_lab_header": "2. Live Impact Illustration (TESPy)",
-        "edu_quiz_header": "Knowledge Test — check your answers and read the explanation",
-        "edu_check_btn": "Check answers",
-        "edu_reset_btn": "Clear answers",
-        "edu_score_banner": "Lesson score: **{score} / {total}** correct answers",
-        "edu_perfect": "Great job! You mastered this lesson.",
-        "edu_answer_correct": "[Correct answer]",
-        "edu_answer_wrong": "[Incorrect] The correct answer is: **{correct}**",
-        "edu_explanation_prefix": "**Explanation:**",
         "edu_lab_metric_cop": "Heating COP",
         "edu_lab_metric_t2": "Discharge temp. T₂",
         "edu_lab_metric_pcomp": "Compressor power P_el",

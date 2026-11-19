@@ -187,9 +187,9 @@ def test_no_emojis_in_codebase():
         assert not matches, f"Znaleziono emotki w {file_path}: {matches}"
 
 
-def test_education_lessons_and_quizzes_integrity():
-    """Weryfikuje spójność merytoryczną lekcji i testów w zakładce Edukacja (PL/EN)."""
-    from src.education import LESSONS, get_lesson_text, get_question_text
+def test_education_lessons_integrity():
+    """Weryfikuje spójność merytoryczną lekcji na podstronie Edukacja (PL/EN)."""
+    from src.education import LESSONS, get_lesson_text
 
     assert len(LESSONS) == 6
     for lesson in LESSONS:
@@ -198,10 +198,3 @@ def test_education_lessons_and_quizzes_integrity():
             assert l_txt["title"]
             assert l_txt["subtitle"]
             assert l_txt["theory"]
-            assert len(lesson.questions) >= 2
-            for q in lesson.questions:
-                q_txt = get_question_text(q, lang)
-                assert q_txt["prompt"]
-                assert len(q_txt["options"]) >= 3
-                assert 0 <= q.correct_idx < len(q_txt["options"])
-                assert q_txt["explanation"]
