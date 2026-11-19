@@ -61,7 +61,7 @@ def inject_custom_css() -> None:
         .step-valve { border-left-color: #00d084; }
         .app-footer {
             margin-top: 0.5rem;
-            margin-bottom: 0;
+            margin-bottom: 0.5rem;
             text-align: center;
             opacity: 0.85;
             font-size: 0.88rem;
