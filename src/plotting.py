@@ -83,11 +83,11 @@ def create_cycle_schematic(result: "CycleResult", lang: str = "pl") -> go.Figure
     fig = go.Figure()
 
     pipes = [
-        dict(x=[8.0, 6.3], y=[1.2, 1.2], color="#0284C7", name=t("plot_pipe_4_evap", lang)),
-        dict(x=[3.7, 2.0, 2.0], y=[1.2, 1.2, 2.45], color="#38BDF8", name=t("plot_pipe_1_suction", lang)),
-        dict(x=[2.0, 2.0, 3.7], y=[3.55, 4.8, 4.8], color="#EF4444", name=t("plot_pipe_2_hot", lang)),
-        dict(x=[6.3, 8.0, 8.0], y=[4.8, 4.8, 3.5], color="#F97316", name=t("plot_pipe_3_liq", lang)),
-        dict(x=[8.0, 8.0], y=[2.5, 1.2], color="#0EA5E9", name=t("plot_pipe_4_two", lang)),
+        dict(x=[8.0, 6.3], y=[1.2, 1.2], color="#0693e3", name=t("plot_pipe_4_evap", lang)),
+        dict(x=[3.7, 2.0, 2.0], y=[1.2, 1.2, 2.45], color="#8ed1fc", name=t("plot_pipe_1_suction", lang)),
+        dict(x=[2.0, 2.0, 3.7], y=[3.55, 4.8, 4.8], color="#ff5a1f", name=t("plot_pipe_2_hot", lang)),
+        dict(x=[6.3, 8.0, 8.0], y=[4.8, 4.8, 3.5], color="#ff6900", name=t("plot_pipe_3_liq", lang)),
+        dict(x=[8.0, 8.0], y=[2.5, 1.2], color="#0693e3", name=t("plot_pipe_4_two", lang)),
     ]
 
     for pipe in pipes:
@@ -106,26 +106,26 @@ def create_cycle_schematic(result: "CycleResult", lang: str = "pl") -> go.Figure
     shapes = [
         dict(
             type="rect", x0=3.7, y0=4.25, x1=6.3, y1=5.35,
-            fillcolor="rgba(239, 68, 68, 0.14)", line=dict(color="#EF4444", width=2.5),
+            fillcolor="rgba(255, 90, 31, 0.14)", line=dict(color="#ff5a1f", width=2.5),
         ),
         dict(
             type="rect", x0=3.7, y0=0.65, x1=6.3, y1=1.75,
-            fillcolor="rgba(14, 165, 233, 0.14)", line=dict(color="#0EA5E9", width=2.5),
+            fillcolor="rgba(6, 147, 227, 0.14)", line=dict(color="#0693e3", width=2.5),
         ),
         dict(
             type="circle", x0=1.35, y0=2.35, x1=2.65, y1=3.65,
-            fillcolor="rgba(249, 115, 22, 0.14)", line=dict(color="#F97316", width=2.5),
+            fillcolor="rgba(255, 105, 0, 0.14)", line=dict(color="#ff6900", width=2.5),
         ),
         dict(
             type="rect", x0=7.35, y0=2.5, x1=8.65, y1=3.5,
-            fillcolor="rgba(34, 197, 94, 0.14)", line=dict(color="#22C55E", width=2.5),
+            fillcolor="rgba(0, 208, 132, 0.14)", line=dict(color="#00d084", width=2.5),
         ),
     ]
 
     node_x = [2.0, 2.8, 7.2, 8.0]
     node_y = [1.85, 4.8, 4.8, 1.85]
     node_labels = ["1", "2", "3", "4"]
-    node_colors = ["#0284C7", "#DC2626", "#EA580C", "#0EA5E9"]
+    node_colors = ["#0693e3", "#ff5a1f", "#ff6900", "#0693e3"]
     node_hovers = [
         t("plot_hover_pt1", lang, T=t_vals[0], p=p_vals[0]),
         t("plot_hover_pt2", lang, T=t_vals[1], p=p_vals[1]),
@@ -216,7 +216,7 @@ def create_energy_balance_bar(result: "CycleResult", lang: str = "pl") -> go.Fig
             x=[result.q_evap_kw],
             name=f"{t('plot_bal_evap', lang)} ({result.q_evap_kw:.2f} kW)",
             orientation="h",
-            marker=dict(color="#0284C7"),
+            marker=dict(color="#0693e3"),
             text=f"{t('plot_bal_evap', lang)}: {result.q_evap_kw:.2f} kW",
             textposition="inside",
             insidetextanchor="middle",
@@ -228,7 +228,7 @@ def create_energy_balance_bar(result: "CycleResult", lang: str = "pl") -> go.Fig
             x=[result.p_comp_kw],
             name=f"{t('plot_bal_comp', lang)} ({result.p_comp_kw:.2f} kW)",
             orientation="h",
-            marker=dict(color="#EA580C"),
+            marker=dict(color="#ff6900"),
             text=f"{t('plot_bal_comp', lang)}: {result.p_comp_kw:.2f} kW",
             textposition="inside",
             insidetextanchor="middle",
@@ -240,7 +240,7 @@ def create_energy_balance_bar(result: "CycleResult", lang: str = "pl") -> go.Fig
             x=[result.q_cond_kw],
             name=f"{t('plot_bal_cond', lang)} ({result.q_cond_kw:.2f} kW)",
             orientation="h",
-            marker=dict(color="#DC2626"),
+            marker=dict(color="#ff5a1f"),
             text=f"Q_cond = {result.q_cond_kw:.2f} kW (COP {result.cop_heating:.2f})",
             textposition="inside",
             insidetextanchor="middle",
@@ -289,7 +289,7 @@ def create_ph_diagram(plot_data: Dict[str, Any], lang: str = "pl") -> go.Figure:
             y=plot_data["path_p_bar"],
             mode="lines",
             name=t("plot_cycle_name", lang, fluid=fluid),
-            line=dict(color="#EF4444", width=3.5),
+            line=dict(color="#ff5a1f", width=3.5),
             hoverinfo="skip",
         )
     )
@@ -403,7 +403,7 @@ def create_ts_diagram(plot_data: Dict[str, Any], lang: str = "pl") -> go.Figure:
             y=plot_data["path_T_c"],
             mode="lines",
             name="Cycle processes" if is_en else "Przemiany obiegu",
-            line=dict(color="#3B82F6", width=3.5),
+            line=dict(color="#0693e3", width=3.5),
             hoverinfo="skip",
         )
     )

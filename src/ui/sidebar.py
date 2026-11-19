@@ -55,9 +55,6 @@ def render_sidebar() -> Tuple[str, str]:
 
         edu_expanded = active_section == "education"
         with st.expander(t("nav_education", lang), expanded=edu_expanded):
-            if "edu_completed" in st.session_state:
-                done = len(st.session_state["edu_completed"])
-                st.caption(t("edu_progress_label", lang, done=done, total=len(LESSONS)))
             for lesson in LESSONS:
                 l_title = get_lesson_text(lesson, lang)["title"]
                 is_current = (
