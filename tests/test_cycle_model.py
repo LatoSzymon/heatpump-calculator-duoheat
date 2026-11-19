@@ -139,3 +139,50 @@ def test_plotting_diagrams():
     assert len(fig_ts.data) == 3
     assert len(fig_contour.data) == 2
     assert len(fig_subcool.data) == 2
+
+
+def test_i18n_pl_en_parity_and_english_outputs():
+    """Sprawdza kompletność kluczy PL/EN oraz generowanie wyników i wykresów w języku angielskim."""
+    from src.i18n import TRANSLATIONS, t
+    from src.utils import get_preset_text, get_refrigerant_text
+
+    pl_keys = set(TRANSLATIONS["pl"].keys())
+    en_keys = set(TRANSLATIONS["en"].keys())
+    assert pl_keys == en_keys
+
+    inp = CycleInput(fluid="R290", t_evap_c=0.0, t_cond_c=45.0)
+    res_en = HeatPumpCycle(inp, lang="en").solve(lang="en")
+    assert "Point" in res_en.state_points_df.columns
+    assert "State description" in res_en.state_points_df.columns
+
+    fig_sch_en = create_cycle_schematic(res_en, lang="en")
+    fig_ph_en = create_ph_diagram(res_en.plot_data, lang="en")
+    assert "CONDENSER" in str(fig_sch_en.layout.annotations)
+    assert "Mollier" in fig_ph_en.layout.title.text
+
+    with pytest.raises(ValueError, match="Evaporation temperature"):
+        HeatPumpCycle(CycleInput(t_evap_c=45.0, t_cond_c=40.0), lang="en")
+
+    assert get_refrigerant_text("R290", "en")["name"] == "R290 (Propane)"
+    assert "Air-source HP" in get_preset_text("air_floor_spring", "en")["label"]
+    assert t("tab_education", "en") == "🎓 Education"
+
+
+def test_education_lessons_and_quizzes_integrity():
+    """Weryfikuje spójność merytoryczną lekcji i testów w zakładce Edukacja (PL/EN)."""
+    from src.education import LESSONS, get_lesson_text, get_question_text
+
+    assert len(LESSONS) == 6
+    for lesson in LESSONS:
+        for lang in ("pl", "en"):
+            l_txt = get_lesson_text(lesson, lang)
+            assert l_txt["title"]
+            assert l_txt["subtitle"]
+            assert l_txt["theory"]
+            assert len(lesson.questions) >= 2
+            for q in lesson.questions:
+                q_txt = get_question_text(q, lang)
+                assert q_txt["prompt"]
+                assert len(q_txt["options"]) >= 3
+                assert 0 <= q.correct_idx < len(q_txt["options"])
+                assert q_txt["explanation"]

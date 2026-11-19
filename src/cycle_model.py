@@ -15,6 +15,7 @@ from tespy.components import (
 )
 from tespy.connections import Connection
 
+from src.i18n import t
 from src.utils import (
     c_to_k,
     k_to_c,
@@ -175,8 +176,9 @@ class CycleResult:
 class HeatPumpCycle:
     """Symulator jednostopniowego obiegu sprężarkowej pompy ciepła w TESPy."""
 
-    def __init__(self, params: CycleInput) -> None:
+    def __init__(self, params: CycleInput, lang: str = "pl") -> None:
         self.params = params
+        self.lang = lang
         validate_cycle_inputs(
             fluid=params.fluid,
             t_evap_c=params.t_evap_c,
@@ -185,10 +187,12 @@ class HeatPumpCycle:
             subcooling_k=params.subcooling_k,
             eta_s=params.eta_s,
             q_cond_kw=params.q_cond_kw,
+            lang=lang,
         )
 
-    def solve(self) -> CycleResult:
+    def solve(self, lang: str | None = None) -> CycleResult:
         """Buduje i rozwiązuje sieć termodynamiczną TESPy dla zadanych parametrów."""
+        active_lang = lang or self.lang
         p = self.params
         fluid = p.fluid
 
@@ -242,9 +246,7 @@ class HeatPumpCycle:
             c3.set_attr(h=h_3_j_kg / 1e3)
             nw.solve(mode="design")
             if not nw.converged:
-                raise RuntimeError(
-                    "Rozwiązanie sieci TESPy nie osiągnęło zbieżności dla zadanych parametrów."
-                )
+                raise RuntimeError(t("err_tespy_not_converged", active_lang))
 
         # 4. Odczyt wyników z komponentów i połączeń
         q_cond_kw = abs(cond.Q.val) / 1e3
@@ -264,10 +266,10 @@ class HeatPumpCycle:
 
         # Zestawienie stanów w 4 głównych węzłach obiegu
         connections = [
-            ("1", "Wlot do sprężarki (para przegrzana)" if p.superheat_k > 1e-4 else "Wlot do sprężarki (para nasycona)", c1),
-            ("2", "Wylot ze sprężarki (gorąca para)", c2),
-            ("3", "Wylot ze skraplacza (ciecz dochłodzona)" if p.subcooling_k > 1e-4 else "Wylot ze skraplacza (ciecz nasycona)", c3),
-            ("4", "Wlot do parownika (mieszanina dwufazowa)", c4),
+            ("1", t("pt1_superheated", active_lang) if p.superheat_k > 1e-4 else t("pt1_saturated", active_lang), c1),
+            ("2", t("pt2_desc", active_lang), c2),
+            ("3", t("pt3_subcooled", active_lang) if p.subcooling_k > 1e-4 else t("pt3_saturated", active_lang), c3),
+            ("4", t("pt4_desc", active_lang), c4),
         ]
 
         rows = []
@@ -284,14 +286,14 @@ class HeatPumpCycle:
 
             rows.append(
                 {
-                    "Punkt": pt_id,
-                    "Opis stanu": desc,
-                    "p [bar]": round(conn.p.val, 3),
-                    "T [°C]": round(t_c, 2),
-                    "h [kJ/kg]": round(conn.h.val, 2),
-                    "s [kJ/(kg·K)]": round(s_kj_kgk, 4),
-                    "x [-]": round(vapor_quality, 3) if vapor_quality is not None else "Jednofazowy",
-                    "ρ [kg/m³]": round(rho_kg_m3, 2),
+                    t("col_point", active_lang): pt_id,
+                    t("col_desc", active_lang): desc,
+                    t("col_p", active_lang): round(conn.p.val, 3),
+                    t("col_T", active_lang): round(t_c, 2),
+                    t("col_h", active_lang): round(conn.h.val, 2),
+                    t("col_s", active_lang): round(s_kj_kgk, 4),
+                    t("col_x", active_lang): round(vapor_quality, 3) if vapor_quality is not None else t("single_phase", active_lang),
+                    t("col_rho", active_lang): round(rho_kg_m3, 2),
                 }
             )
 
