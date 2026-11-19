@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Dict
 import CoolProp.CoolProp as CP
 
+from src.i18n import normalize_lang, t
+
 
 @dataclass(frozen=True)
 class RefrigerantInfo:
@@ -157,6 +159,85 @@ SCENARIO_PRESETS: Dict[str, ScenarioPreset] = {
 }
 
 
+REFRIGERANTS_EN: Dict[str, Dict[str, str]] = {
+    "R290": {
+        "name": "R290 (Propane)",
+        "description": "Natural hydrocarbon with ultra-low GWP and excellent thermodynamic properties (high flammability A3).",
+    },
+    "R32": {
+        "name": "R32 (Difluoromethane)",
+        "description": "Popular refrigerant in modern air-to-water heat pumps and air conditioners (mildly flammable A2L).",
+    },
+    "R134a": {
+        "name": "R134a (Tetrafluoroethane)",
+        "description": "Classic HFC refrigerant used in medium- and high-temperature systems (non-flammable A1).",
+    },
+    "R410A": {
+        "name": "R410A (R32/R125 Blend)",
+        "description": "Near-azeotropic blend with high operating pressure, widely used in older systems.",
+    },
+    "R1234yf": {
+        "name": "R1234yf (Tetrafluoropropene)",
+        "description": "Synthetic HFO refrigerant with ultra-low GWP, drop-in replacement direction for R134a.",
+    },
+    "R600a": {
+        "name": "R600a (Isobutane)",
+        "description": "Natural hydrocarbon with low operating pressures and high critical temperature.",
+    },
+    "R717": {
+        "name": "R717 (Ammonia)",
+        "description": "Industrial natural refrigerant with very high latent heat and high discharge temperature.",
+    },
+}
+
+SCENARIO_PRESETS_EN: Dict[str, Dict[str, str]] = {
+    "air_floor_spring": {
+        "label": "Air-source HP + underfloor heating (spring/autumn, +7°C)",
+        "explanation": (
+            "Optimal operating conditions: small temperature lift between outdoor air (+7°C, evaporation +2°C) "
+            "and underfloor heating (~30–35°C) yields a very high COP."
+        ),
+    },
+    "air_radiators_winter": {
+        "label": "Air-source HP + radiators (cold winter, -7°C)",
+        "explanation": (
+            "Harsh winter conditions: large temperature lift (ΔT = 67 K) between cold outdoor air (-7°C, evaporation -12°C) "
+            "and hot radiators (55°C) forces the compressor to work harder and noticeably lowers COP."
+        ),
+    },
+    "ground_floor": {
+        "label": "Ground-source HP + underfloor heating (stable source)",
+        "explanation": (
+            "Ground at a few meters depth maintains a stable temperature year-round, allowing the evaporator "
+            "to operate steadily around 0°C even in mid-winter."
+        ),
+    },
+    "dhw_heating": {
+        "label": "Domestic hot water heating (DHW 55°C)",
+        "explanation": (
+            "Heating domestic hot water tank to 55°C requires a high condensation temperature (~60°C), "
+            "raising discharge pressure and lowering efficiency compared to underfloor heating."
+        ),
+    },
+}
+
+
+def get_refrigerant_text(code: str, lang: str = "pl") -> Dict[str, str]:
+    """Zwraca zlokalizowaną nazwę i opis czynnika chłodniczego."""
+    ref = REFRIGERANTS[code]
+    if normalize_lang(lang) == "en" and code in REFRIGERANTS_EN:
+        return REFRIGERANTS_EN[code]
+    return {"name": ref.name, "description": ref.description}
+
+
+def get_preset_text(preset_id: str, lang: str = "pl") -> Dict[str, str]:
+    """Zwraca zlokalizowaną etykietę i opis scenariusza."""
+    preset = SCENARIO_PRESETS[preset_id]
+    if normalize_lang(lang) == "en" and preset_id in SCENARIO_PRESETS_EN:
+        return SCENARIO_PRESETS_EN[preset_id]
+    return {"label": preset.label, "explanation": preset.explanation}
+
+
 def c_to_k(temp_c: float) -> float:
     """Konwertuje temperaturę z °C na K."""
     return temp_c + 273.15
@@ -197,11 +278,12 @@ def validate_cycle_inputs(
     subcooling_k: float,
     eta_s: float,
     q_cond_kw: float,
+    lang: str = "pl",
 ) -> None:
     """Waliduje fizyczną poprawność parametrów wejściowych obiegu podkrytycznego."""
     if fluid not in REFRIGERANTS:
         raise ValueError(
-            f"Nieobsługiwany czynnik '{fluid}'. Dostępne: {list(REFRIGERANTS.keys())}"
+            t("val_bad_fluid", lang, fluid=fluid, avail=list(REFRIGERANTS.keys()))
         )
 
     limits = get_fluid_limits(fluid)
@@ -210,43 +292,30 @@ def validate_cycle_inputs(
 
     if t_evap_c <= t_min_c + 1.0:
         raise ValueError(
-            f"Temperatura parowania ({t_evap_c:.1f} °C) jest zbyt bliska minimalnej "
-            f"temperaturze modelu dla {fluid} ({t_min_c:.1f} °C)."
+            t("val_t_evap_min", lang, t_evap=t_evap_c, fluid=fluid, t_min=t_min_c)
         )
 
     if t_cond_c >= t_crit_c - 2.0:
         raise ValueError(
-            f"Temperatura skraplania ({t_cond_c:.1f} °C) przekracza bezpieczny limit "
-            f"obiegu podkrytycznego dla {fluid} (T_crit = {t_crit_c:.1f} °C)."
+            t("val_t_cond_crit", lang, t_cond=t_cond_c, fluid=fluid, t_crit=t_crit_c)
         )
 
     if t_evap_c >= t_cond_c - 2.0:
         raise ValueError(
-            f"Temperatura parowania ({t_evap_c:.1f} °C) musi być niższa od "
-            f"temperatury skraplania ({t_cond_c:.1f} °C) o co najmniej 2 K."
+            t("val_t_evap_ge_cond", lang, t_evap=t_evap_c, t_cond=t_cond_c)
         )
 
     if superheat_k < 0.0 or superheat_k > 40.0:
-        raise ValueError(
-            f"Przegrzanie ({superheat_k:.1f} K) musi mieścić się w przedziale [0, 40] K."
-        )
+        raise ValueError(t("val_superheat_range", lang, sh=superheat_k))
 
     if subcooling_k < 0.0 or subcooling_k > 35.0:
-        raise ValueError(
-            f"Dochłodzenie ({subcooling_k:.1f} K) musi mieścić się w przedziale [0, 35] K."
-        )
+        raise ValueError(t("val_subcool_range", lang, sc=subcooling_k))
 
     if t_cond_c - subcooling_k <= t_evap_c:
-        raise ValueError(
-            "Temperatura po dochłodzeniu za skraplaczem nie może być niższa niż temperatura parowania."
-        )
+        raise ValueError(t("val_subcool_below_evap", lang))
 
     if not (0.1 <= eta_s <= 1.0):
-        raise ValueError(
-            f"Sprawność izentropowa sprężarki ({eta_s:.2f}) musi należeć do przedziału [0.1, 1.0]."
-        )
+        raise ValueError(t("val_eta_range", lang, eta=eta_s))
 
     if q_cond_kw <= 0.0:
-        raise ValueError(
-            f"Moc grzewcza skraplacza ({q_cond_kw:.2f} kW) musi być dodatnia."
-        )
+        raise ValueError(t("val_q_cond_pos", lang, q=q_cond_kw))

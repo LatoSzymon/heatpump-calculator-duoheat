@@ -5,6 +5,8 @@ import numpy as np
 import plotly.graph_objects as go
 import CoolProp.CoolProp as CP
 
+from src.i18n import normalize_lang, t
+
 if TYPE_CHECKING:
     from src.cycle_model import CycleResult
 
@@ -49,8 +51,8 @@ def _compute_saturation_dome(fluid: str, n_points: int = 120) -> Dict[str, Any]:
         raise ValueError(f"Nie udało się wyznaczyć krzywej nasycenia dla czynnika {fluid}.")
 
     p_crit = CP.PropsSI("pcrit", fluid) / 1e5
-    h_crit = CP.PropsSI("H", "T", t_crit - 0.01, "Q", 0.5, fluid) / 1e3
-    s_crit = CP.PropsSI("S", "T", t_crit - 0.01, "Q", 0.5, fluid) / 1e3
+    h_crit = 0.5 * (h_liq[-1] + h_vap[-1])
+    s_crit = 0.5 * (s_liq[-1] + s_vap[-1])
 
     h_dome = np.array(h_liq + [h_crit] + h_vap[::-1])
     p_dome = np.array(p_liq + [p_crit] + p_vap[::-1])
@@ -69,7 +71,7 @@ def _compute_saturation_dome(fluid: str, n_points: int = 120) -> Dict[str, Any]:
     }
 
 
-def create_cycle_schematic(result: "CycleResult") -> go.Figure:
+def create_cycle_schematic(result: "CycleResult", lang: str = "pl") -> go.Figure:
     """
     Tworzy interaktywny, responsywny schemat ideowy 4-elementowego obiegu pompy ciepła
     z przezroczystym tłem (kompatybilny z trybem ciemnym i jasnym) oraz bez nakładających się etykiet.
@@ -81,11 +83,11 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
     fig = go.Figure()
 
     pipes = [
-        dict(x=[8.0, 6.3], y=[1.2, 1.2], color="#0284C7", name="4 → Parownik (wrzenie)"),
-        dict(x=[3.7, 2.0, 2.0], y=[1.2, 1.2, 2.45], color="#38BDF8", name="1 (Ssanie sprężarki)"),
-        dict(x=[2.0, 2.0, 3.7], y=[3.55, 4.8, 4.8], color="#EF4444", name="2 (Gorąca para)"),
-        dict(x=[6.3, 8.0, 8.0], y=[4.8, 4.8, 3.5], color="#F97316", name="3 (Ciecz pod ciśnieniem)"),
-        dict(x=[8.0, 8.0], y=[2.5, 1.2], color="#0EA5E9", name="4 (Mieszanina dwufazowa)"),
+        dict(x=[8.0, 6.3], y=[1.2, 1.2], color="#0284C7", name=t("plot_pipe_4_evap", lang)),
+        dict(x=[3.7, 2.0, 2.0], y=[1.2, 1.2, 2.45], color="#38BDF8", name=t("plot_pipe_1_suction", lang)),
+        dict(x=[2.0, 2.0, 3.7], y=[3.55, 4.8, 4.8], color="#EF4444", name=t("plot_pipe_2_hot", lang)),
+        dict(x=[6.3, 8.0, 8.0], y=[4.8, 4.8, 3.5], color="#F97316", name=t("plot_pipe_3_liq", lang)),
+        dict(x=[8.0, 8.0], y=[2.5, 1.2], color="#0EA5E9", name=t("plot_pipe_4_two", lang)),
     ]
 
     for pipe in pipes:
@@ -125,10 +127,10 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
     node_labels = ["1", "2", "3", "4"]
     node_colors = ["#0284C7", "#DC2626", "#EA580C", "#0EA5E9"]
     node_hovers = [
-        f"<b>Punkt 1: Ssanie sprężarki</b><br>T = {t_vals[0]:.1f} °C | p = {p_vals[0]:.2f} bar",
-        f"<b>Punkt 2: Tłoczenie sprężarki</b><br>T = {t_vals[1]:.1f} °C | p = {p_vals[1]:.2f} bar",
-        f"<b>Punkt 3: Za skraplaczem</b><br>T = {t_vals[2]:.1f} °C | p = {p_vals[2]:.2f} bar",
-        f"<b>Punkt 4: Za zaworem dławiącym</b><br>T = {t_vals[3]:.1f} °C | p = {p_vals[3]:.2f} bar | x = {result.x_4 * 100:.1f}%",
+        t("plot_hover_pt1", lang, T=t_vals[0], p=p_vals[0]),
+        t("plot_hover_pt2", lang, T=t_vals[1], p=p_vals[1]),
+        t("plot_hover_pt3", lang, T=t_vals[2], p=p_vals[2]),
+        t("plot_hover_pt4", lang, T=t_vals[3], p=p_vals[3], x=result.x_4 * 100),
     ]
 
     fig.add_trace(
@@ -147,10 +149,10 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
     )
 
     annotations = [
-        dict(x=5.0, y=4.8, text="<b>SKRAPLACZ</b><br><span style='font-size:11px'>Oddaje ciepło</span>", showarrow=False, font=dict(color="#F87171", size=13)),
-        dict(x=5.0, y=1.2, text="<b>PAROWNIK</b><br><span style='font-size:11px'>Pobiera ciepło</span>", showarrow=False, font=dict(color="#38BDF8", size=13)),
-        dict(x=2.0, y=3.0, text="<b>SPRĘŻARKA</b>", showarrow=False, font=dict(color="#FB923C", size=11)),
-        dict(x=8.0, y=3.0, text="<b>ZAWÓR</b><br><span style='font-size:10px'>dławiący</span>", showarrow=False, font=dict(color="#4ADE80", size=11)),
+        dict(x=5.0, y=4.8, text=t("plot_ann_cond", lang), showarrow=False, font=dict(color="#F87171", size=13)),
+        dict(x=5.0, y=1.2, text=t("plot_ann_evap", lang), showarrow=False, font=dict(color="#38BDF8", size=13)),
+        dict(x=2.0, y=3.0, text=t("plot_ann_comp", lang), showarrow=False, font=dict(color="#FB923C", size=11)),
+        dict(x=8.0, y=3.0, text=t("plot_ann_valve", lang), showarrow=False, font=dict(color="#4ADE80", size=11)),
 
         dict(
             x=5.0, y=6.0, ax=5.0, ay=5.4, xref="x", yref="y", axref="x", ayref="y",
@@ -158,7 +160,7 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
         ),
         dict(
             x=5.0, y=6.35,
-            text=f"<b>Q_cond = {result.q_cond_kw:.2f} kW</b> (do budynku)",
+            text=t("plot_ann_qcond", lang, q=result.q_cond_kw),
             showarrow=False, font=dict(color="#F87171", size=13),
         ),
         dict(
@@ -167,7 +169,7 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
         ),
         dict(
             x=5.0, y=-0.35,
-            text=f"<b>Q_evap = {result.q_evap_kw:.2f} kW</b> (z otoczenia)",
+            text=t("plot_ann_qevap", lang, q=result.q_evap_kw),
             showarrow=False, font=dict(color="#38BDF8", size=13),
         ),
         dict(
@@ -176,14 +178,14 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
         ),
         dict(
             x=0.35, y=3.55,
-            text=f"<b>P_el = {result.p_comp_kw:.2f} kW</b><br>(Prąd)",
+            text=t("plot_ann_pcomp", lang, p=result.p_comp_kw),
             showarrow=False, font=dict(color="#FB923C", size=12),
         ),
 
         dict(x=1.05, y=1.85, text=f"<b>{t_vals[0]:.1f} °C</b><br>{p_vals[0]:.2f} bar", showarrow=False, font=dict(size=11, color="#38BDF8")),
         dict(x=2.8, y=5.45, text=f"<b>{t_vals[1]:.1f} °C</b><br>{p_vals[1]:.2f} bar", showarrow=False, font=dict(size=11, color="#F87171")),
         dict(x=7.2, y=5.45, text=f"<b>{t_vals[2]:.1f} °C</b><br>{p_vals[2]:.2f} bar", showarrow=False, font=dict(size=11, color="#FB923C")),
-        dict(x=9.1, y=1.85, text=f"<b>{t_vals[3]:.1f} °C</b><br>x = {result.x_4 * 100:.0f}% pary", showarrow=False, font=dict(size=11, color="#38BDF8")),
+        dict(x=9.1, y=1.85, text=f"<b>{t_vals[3]:.1f} °C</b><br>x = {result.x_4 * 100:.0f}%", showarrow=False, font=dict(size=11, color="#38BDF8")),
 
         dict(x=2.0, y=4.25, ax=2.0, ay=3.75, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#EF4444", arrowwidth=2),
         dict(x=8.0, y=2.05, ax=8.0, ay=2.45, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#0EA5E9", arrowwidth=2),
@@ -202,39 +204,41 @@ def create_cycle_schematic(result: "CycleResult") -> go.Figure:
     return fig
 
 
-def create_energy_balance_bar(result: "CycleResult") -> go.Figure:
+def create_energy_balance_bar(result: "CycleResult", lang: str = "pl") -> go.Figure:
     """Tworzy czytelny wykres bilansu energii: Q_evap + P_el = Q_cond bez nakładającej się legendy."""
     fig = go.Figure()
+    lbl_src = t("plot_bal_sources", lang)
+    lbl_out = t("plot_bal_output", lang)
 
     fig.add_trace(
         go.Bar(
-            y=["Źródło"],
+            y=[lbl_src],
             x=[result.q_evap_kw],
-            name=f"Z natury ({result.q_evap_kw:.2f} kW)",
+            name=f"{t('plot_bal_evap', lang)} ({result.q_evap_kw:.2f} kW)",
             orientation="h",
             marker=dict(color="#0284C7"),
-            text=f"Z natury: {result.q_evap_kw:.2f} kW",
+            text=f"{t('plot_bal_evap', lang)}: {result.q_evap_kw:.2f} kW",
             textposition="inside",
             insidetextanchor="middle",
         )
     )
     fig.add_trace(
         go.Bar(
-            y=["Źródło"],
+            y=[lbl_src],
             x=[result.p_comp_kw],
-            name=f"Prąd ({result.p_comp_kw:.2f} kW)",
+            name=f"{t('plot_bal_comp', lang)} ({result.p_comp_kw:.2f} kW)",
             orientation="h",
             marker=dict(color="#EA580C"),
-            text=f"Prąd: {result.p_comp_kw:.2f} kW",
+            text=f"{t('plot_bal_comp', lang)}: {result.p_comp_kw:.2f} kW",
             textposition="inside",
             insidetextanchor="middle",
         )
     )
     fig.add_trace(
         go.Bar(
-            y=["Budynek"],
+            y=[lbl_out],
             x=[result.q_cond_kw],
-            name=f"Do budynku ({result.q_cond_kw:.2f} kW)",
+            name=f"{t('plot_bal_cond', lang)} ({result.q_cond_kw:.2f} kW)",
             orientation="h",
             marker=dict(color="#DC2626"),
             text=f"Q_cond = {result.q_cond_kw:.2f} kW (COP {result.cop_heating:.2f})",
@@ -245,8 +249,8 @@ def create_energy_balance_bar(result: "CycleResult") -> go.Figure:
 
     fig.update_layout(
         barmode="stack",
-        title="Bilans mocy: Q_evap + P_el = Q_cond",
-        xaxis_title="Moc [kW]",
+        title=t("plot_bal_title", lang, q_evap=result.q_evap_kw, p_comp=result.p_comp_kw, q_cond=result.q_cond_kw),
+        xaxis_title=t("plot_bal_yaxis", lang),
         height=190,
         showlegend=False,
         margin=dict(l=10, r=10, t=40, b=40),
@@ -256,10 +260,11 @@ def create_energy_balance_bar(result: "CycleResult") -> go.Figure:
     return fig
 
 
-def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
+def create_ph_diagram(plot_data: Dict[str, Any], lang: str = "pl") -> go.Figure:
     """Tworzy interaktywny wykres log(p)-h (Molliera) z naniesionym obiegiem pompy ciepła."""
     fluid = plot_data["fluid"]
     dome = _compute_saturation_dome(fluid)
+    is_en = normalize_lang(lang) == "en"
 
     fig = go.Figure()
 
@@ -269,11 +274,11 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
             x=dome["h_dome"],
             y=dome["p_dome"],
             mode="lines",
-            name="Nasycenie (x=0 / x=1)",
+            name=t("plot_dome_name", lang),
             line=dict(color="#94A3B8", width=2, dash="dash"),
             fill="toself",
             fillcolor="rgba(148, 163, 184, 0.12)",
-            hovertemplate="h = %{x:.1f} kJ/kg<br>p = %{y:.2f} bar<extra>Nasycenie</extra>",
+            hovertemplate=f"h = %{{x:.1f}} kJ/kg<br>p = %{{y:.2f}} bar<extra>{t('plot_dome_name', lang)}</extra>",
         )
     )
 
@@ -283,20 +288,25 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
             x=plot_data["path_h_kj_kg"],
             y=plot_data["path_p_bar"],
             mode="lines",
-            name="Obieg pompy ciepła",
+            name=t("plot_cycle_name", lang, fluid=fluid),
             line=dict(color="#EF4444", width=3.5),
             hoverinfo="skip",
         )
     )
 
     # 3. Punkty węzłowe (1, 2, 3, 4)
-    labels = ["1 (Ssanie)", "2 (Tłoczenie)", "3 (Za skraplaczem)", "4 (Za zaworem)"]
+    labels = (
+        ["1 (Suction)", "2 (Discharge)", "3 (Condenser out)", "4 (Valve out)"]
+        if is_en
+        else ["1 (Ssanie)", "2 (Tłoczenie)", "3 (Za skraplaczem)", "4 (Za zaworem)"]
+    )
+    pt_word = t("plot_pt_prefix", lang)
     fig.add_trace(
         go.Scatter(
             x=plot_data["h_kj_kg"],
             y=plot_data["p_bar"],
             mode="markers+text",
-            name="Punkty (1–4)",
+            name="Points (1–4)" if is_en else "Punkty (1–4)",
             text=["1", "2", "3", "4"],
             textposition=["bottom right", "top right", "top left", "bottom left"],
             textfont=dict(size=14, family="Arial Black"),
@@ -307,7 +317,7 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
             ),
             customdata=list(zip(labels, plot_data["T_c"], plot_data["s_kj_kgk"])),
             hovertemplate=(
-                "<b>Punkt %{customdata[0]}</b><br>"
+                f"<b>{pt_word} %{{customdata[0]}}</b><br>"
                 "p = %{y:.2f} bar<br>"
                 "h = %{x:.2f} kJ/kg<br>"
                 "T = %{customdata[1]:.2f} °C<br>"
@@ -323,29 +333,29 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
     fig.add_annotation(
         x=dome["h_crit"],
         y=float(np.log10(p_mid)),
-        text="Obszar dwufazowy<br>(ciecz + para)",
+        text="Two-phase region<br>(liquid + vapor)" if is_en else "Obszar dwufazowy<br>(ciecz + para)",
         showarrow=False,
         font=dict(size=11, color="#94A3B8"),
     )
     fig.add_annotation(
         x=h_min + 0.08 * (h_max - h_min),
         y=float(np.log10(plot_data["p_cond_bar"] * 0.75)),
-        text="Ciecz<br>dochłodzona",
+        text="Subcooled<br>liquid" if is_en else "Ciecz<br>dochłodzona",
         showarrow=False,
         font=dict(size=10, color="#38BDF8"),
     )
     fig.add_annotation(
         x=h_max - 0.05 * (h_max - h_min),
         y=float(np.log10(p_mid)),
-        text="Para<br>przegrzana",
+        text="Superheated<br>vapor" if is_en else "Para<br>przegrzana",
         showarrow=False,
         font=dict(size=10, color="#F87171"),
     )
 
     fig.update_layout(
-        title=dict(text=f"Wykres log(p)-h (Molliera) — {fluid}", font=dict(size=15)),
-        xaxis_title="Entalpia właściwa h [kJ/kg]",
-        yaxis_title="Ciśnienie absolutne p [bar] (log)",
+        title=dict(text=t("plot_ph_title", lang, fluid=fluid), font=dict(size=15)),
+        xaxis_title=t("plot_ph_xaxis", lang),
+        yaxis_title=t("plot_ph_yaxis", lang),
         yaxis_type="log",
         height=460,
         paper_bgcolor="rgba(0,0,0,0)",
@@ -364,10 +374,11 @@ def create_ph_diagram(plot_data: Dict[str, Any]) -> go.Figure:
     return fig
 
 
-def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
+def create_ts_diagram(plot_data: Dict[str, Any], lang: str = "pl") -> go.Figure:
     """Tworzy interaktywny wykres T-s z gładkimi przemianami oraz punktami na krzywej nasycenia."""
     fluid = plot_data["fluid"]
     dome = _compute_saturation_dome(fluid)
+    is_en = normalize_lang(lang) == "en"
 
     fig = go.Figure()
 
@@ -377,11 +388,11 @@ def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
             x=dome["s_dome"],
             y=dome["t_dome"],
             mode="lines",
-            name="Nasycenie (x=0 / x=1)",
+            name=t("plot_dome_name", lang),
             line=dict(color="#94A3B8", width=2, dash="dash"),
             fill="toself",
             fillcolor="rgba(148, 163, 184, 0.12)",
-            hovertemplate="s = %{x:.4f} kJ/(kg·K)<br>T = %{y:.1f} °C<extra>Nasycenie</extra>",
+            hovertemplate=f"s = %{{x:.4f}} kJ/(kg·K)<br>T = %{{y:.1f}} °C<extra>{t('plot_dome_name', lang)}</extra>",
         )
     )
 
@@ -391,20 +402,25 @@ def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
             x=plot_data["path_s_kj_kgk"],
             y=plot_data["path_T_c"],
             mode="lines",
-            name="Przemiany obiegu",
+            name="Cycle processes" if is_en else "Przemiany obiegu",
             line=dict(color="#3B82F6", width=3.5),
             hoverinfo="skip",
         )
     )
 
     # 3. Główne punkty węzłowe (1, 2, 3, 4)
-    labels = ["1 (Ssanie)", "2 (Tłoczenie)", "3 (Za skraplaczem)", "4 (Za zaworem)"]
+    labels = (
+        ["1 (Suction)", "2 (Discharge)", "3 (Condenser out)", "4 (Valve out)"]
+        if is_en
+        else ["1 (Ssanie)", "2 (Tłoczenie)", "3 (Za skraplaczem)", "4 (Za zaworem)"]
+    )
+    pt_word = t("plot_pt_prefix", lang)
     fig.add_trace(
         go.Scatter(
             x=plot_data["s_kj_kgk"],
             y=plot_data["T_c"],
             mode="markers+text",
-            name="Punkty (1–4)",
+            name="Points (1–4)" if is_en else "Punkty (1–4)",
             text=["1", "2", "3", "4"],
             textposition=["bottom right", "top right", "bottom left", "bottom left"],
             textfont=dict(size=14, family="Arial Black"),
@@ -415,7 +431,7 @@ def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
             ),
             customdata=list(zip(labels, plot_data["p_bar"], plot_data["h_kj_kg"])),
             hovertemplate=(
-                "<b>Punkt %{customdata[0]}</b><br>"
+                f"<b>{pt_word} %{{customdata[0]}}</b><br>"
                 "T = %{y:.2f} °C<br>"
                 "s = %{x:.4f} kJ/(kg·K)<br>"
                 "p = %{customdata[1]:.2f} bar<br>"
@@ -427,14 +443,14 @@ def create_ts_diagram(plot_data: Dict[str, Any]) -> go.Figure:
     t_mid = 0.5 * (plot_data["t_evap_c"] + plot_data["t_cond_c"])
     fig.add_annotation(
         x=dome["s_crit"], y=t_mid,
-        text="Obszar dwufazowy<br>(stała T podczas przemiany)",
+        text="Two-phase region<br>(isothermal phase change)" if is_en else "Obszar dwufazowy<br>(stała T podczas przemiany)",
         showarrow=False, font=dict(size=10, color="#94A3B8"),
     )
 
     fig.update_layout(
-        title=dict(text=f"Wykres T-s (Temperatura–Entropia) — {fluid}", font=dict(size=15)),
-        xaxis_title="Entropia właściwa s [kJ/(kg·K)]",
-        yaxis_title="Temperatura T [°C]",
+        title=dict(text=t("plot_ts_title", lang, fluid=fluid), font=dict(size=15)),
+        xaxis_title=t("plot_ts_xaxis", lang),
+        yaxis_title=t("plot_ts_yaxis", lang),
         height=460,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
@@ -456,6 +472,7 @@ def create_cop_contour_plot(
     sensitivity_data: Dict[str, Any],
     current_t_evap: float,
     current_t_cond: float,
+    lang: str = "pl",
 ) -> go.Figure:
     """Tworzy mapę konturową COP = f(T_evap, T_cond) interpolowaną przy użyciu SciPy."""
     fig = go.Figure()
@@ -480,13 +497,14 @@ def create_cop_contour_plot(
         )
     )
 
+    op_label = t("plot_current_op", lang)
     fig.add_trace(
         go.Scatter(
             x=[current_t_evap],
             y=[current_t_cond],
             mode="markers+text",
-            name="Aktualny punkt pracy",
-            text=["Punkt pracy"],
+            name=op_label,
+            text=[op_label],
             textposition="top center",
             textfont=dict(color="white", size=13),
             marker=dict(
@@ -499,9 +517,9 @@ def create_cop_contour_plot(
     )
 
     fig.update_layout(
-        title="Mapa efektywności COP = f(T_parowania, T_skraplania) [SciPy]",
-        xaxis_title="Temperatura parowania T_evap [°C]",
-        yaxis_title="Temperatura skraplania T_cond [°C]",
+        title=t("plot_contour_title", lang),
+        xaxis_title=t("plot_contour_xaxis", lang),
+        yaxis_title=t("plot_contour_yaxis", lang),
         height=480,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
@@ -511,7 +529,7 @@ def create_cop_contour_plot(
     return fig
 
 
-def create_subcooling_curve_plot(opt_res: Dict[str, Any]) -> go.Figure:
+def create_subcooling_curve_plot(opt_res: Dict[str, Any], lang: str = "pl") -> go.Figure:
     """Tworzy wykres zależności efektywnego COP od stopnia dochłodzenia ΔT_sc."""
     fig = go.Figure()
     fig.add_trace(
@@ -519,7 +537,7 @@ def create_subcooling_curve_plot(opt_res: Dict[str, Any]) -> go.Figure:
             x=opt_res["curve_sc_k"],
             y=opt_res["curve_cop"],
             mode="lines+markers",
-            name="Efektywne COP",
+            name=t("plot_subcool_curve", lang),
             line=dict(color="#3B82F6", width=3),
             marker=dict(size=6),
             hovertemplate="ΔT_sc = %{x:.1f} K<br>COP = %{y:.3f}<extra></extra>",
@@ -531,15 +549,15 @@ def create_subcooling_curve_plot(opt_res: Dict[str, Any]) -> go.Figure:
             y=[opt_res["max_cop"]],
             mode="markers+text",
             name="Optimum",
-            text=[f"Optimum ({opt_res['optimal_subcooling_k']:.1f} K)"],
+            text=[t("plot_subcool_opt", lang, sc=opt_res["optimal_subcooling_k"], cop=opt_res["max_cop"])],
             textposition="bottom center",
             marker=dict(size=13, symbol="star", color="#EF4444"),
         )
     )
     fig.update_layout(
-        title="Wpływ dochłodzenia ΔT_sc na efektywne COP",
-        xaxis_title="Dochłodzenie ΔT_sc [K]",
-        yaxis_title="COP grzewcze [-]",
+        title=t("plot_subcool_title", lang),
+        xaxis_title=t("plot_subcool_xaxis", lang),
+        yaxis_title=t("plot_subcool_yaxis", lang),
         height=330,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",

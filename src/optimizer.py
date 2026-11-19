@@ -8,6 +8,7 @@ from scipy.optimize import root_scalar, minimize_scalar
 from scipy.interpolate import RegularGridInterpolator
 
 from src.cycle_model import CycleInput, HeatPumpCycle
+from src.i18n import t
 from src.utils import get_fluid_limits
 
 
@@ -15,6 +16,7 @@ def find_evap_temp_for_target_cop(
     base_input: CycleInput,
     target_cop: float,
     t_evap_bounds: Tuple[float, float] = (-25.0, 25.0),
+    lang: str = "pl",
 ) -> Dict[str, Any]:
     """
     Wyznacza za pomocą `scipy.optimize.root_scalar` (metoda Brenta) wymaganą temperaturę
@@ -28,13 +30,11 @@ def find_evap_temp_for_target_cop(
     )
 
     if low >= high:
-        raise ValueError(
-            "Przedział poszukiwań temperatury parowania jest pusty dla zadanej temperatury skraplania."
-        )
+        raise ValueError(t("opt_empty_bracket", lang))
 
     def objective(t_evap: float) -> float:
         trial_input = replace(base_input, t_evap_c=float(t_evap))
-        res = HeatPumpCycle(trial_input).solve()
+        res = HeatPumpCycle(trial_input, lang=lang).solve(lang=lang)
         return res.cop_heating - target_cop
 
     f_low = objective(low)
@@ -44,8 +44,15 @@ def find_evap_temp_for_target_cop(
         cop_min = f_low + target_cop
         cop_max = f_high + target_cop
         raise ValueError(
-            f"Zadane COP = {target_cop:.2f} jest poza osiągalnym zakresem "
-            f"[{cop_min:.2f}, {cop_max:.2f}] dla T_evap w [{low:.1f}, {high:.1f}] °C."
+            t(
+                "opt_out_of_range",
+                lang,
+                target=target_cop,
+                cmin=cop_min,
+                cmax=cop_max,
+                low=low,
+                high=high,
+            )
         )
 
     sol = root_scalar(objective, bracket=[low, high], method="brentq", xtol=1e-3)
@@ -112,6 +119,7 @@ def run_sensitivity_grid(
     t_evap_range: Tuple[float, float] = (-15.0, 15.0),
     t_cond_range: Tuple[float, float] = (30.0, 60.0),
     n_points: int = 7,
+    lang: str = "pl",
 ) -> Dict[str, Any]:
     """
     Generuje siatkę charakterystyk COP i mocy sprężarki dla zakresu (T_evap, T_cond)
@@ -145,11 +153,11 @@ def run_sensitivity_grid(
             p_comp_grid[i, j] = res.p_comp_kw
             records.append(
                 {
-                    "T_evap [°C]": float(t_ev),
-                    "T_cond [°C]": float(t_cd),
-                    "COP [-]": round(res.cop_heating, 3),
-                    "P_comp [kW]": round(res.p_comp_kw, 3),
-                    "Q_evap [kW]": round(res.q_evap_kw, 3),
+                    t("opt_col_tevap", lang): float(t_ev),
+                    t("opt_col_tcond", lang): float(t_cd),
+                    t("opt_col_cop", lang): round(res.cop_heating, 3),
+                    t("opt_col_pcomp", lang): round(res.p_comp_kw, 3),
+                    t("opt_col_qevap", lang): round(res.q_evap_kw, 3),
                 }
             )
 
