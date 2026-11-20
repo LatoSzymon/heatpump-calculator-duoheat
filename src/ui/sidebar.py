@@ -31,8 +31,21 @@ def render_sidebar() -> Tuple[str, str]:
     init_nav_state()
 
     with st.sidebar:
+        current_lang = st.session_state["lang"]
+        st.markdown(
+            f"""
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-title">
+                    <span class="sidebar-brand-dot"></span>DUOHEAT
+                </div>
+                <div class="sidebar-brand-sub">{t("brand_tagline", current_lang)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
         lang = st.radio(
-            t("lang_label", st.session_state["lang"]),
+            t("lang_label", current_lang),
             options=list(SUPPORTED_LANGS),
             key="lang",
             horizontal=True,
@@ -40,7 +53,10 @@ def render_sidebar() -> Tuple[str, str]:
         )
 
         st.divider()
-        st.header(t("nav_header", lang))
+        st.markdown(
+            f'<div class="sidebar-section-label">{t("nav_header", lang)}</div>',
+            unsafe_allow_html=True,
+        )
 
         active_section = st.session_state["active_section"]
         sim_type = "primary" if active_section == "simulation" else "secondary"

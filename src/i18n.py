@@ -8,6 +8,8 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     "pl": {
         # App & Header
         "page_title": "Kalkulator Obiegu Pompy Ciepła — Instytut Naukowy",
+        "brand_badge": "PROJEKT DUOHEAT",
+        "brand_tagline": "Symulator obiegu termodynamicznego",
         "app_title": "Kalkulator i Symulator Obiegu Pompy Ciepła",
         "app_subtitle": "Narzędzie szkoleniowo-badawcze (TESPy, CoolProp i SciPy).",
         "footer_html": (
@@ -26,6 +28,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "edu_lessons_expander": "Lekcje (wybierz temat)",
         # Sidebar
         "sidebar_header": "Konfiguracja obiegu",
+        "scenario_fluid_header": "Scenariusz i czynnik",
         "preset_label": "Gotowy scenariusz (szybki start)",
         "preset_custom": "Własne ustawienia",
         "preset_help": "Wybierz typowy przypadek z praktyki inżynierskiej, aby zobaczyć realistyczne wartości.",
@@ -147,6 +150,12 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "exergy_eff_box": "**Sprawność egzergowa (względem obiegu Carnota):** `{val:.1f} %`",
         "eer_box": "**Współczynnik chłodniczy (EER / COP_chł):** `{val:.2f}`",
         "tespy_err_box": "**Błąd zamknięcia bilansu energii (TESPy):** `{val:.4e} W`",
+        "summary_exergy_label": "Sprawność egzergowa",
+        "summary_exergy_sub": "Względem obiegu Carnota",
+        "summary_eer_label": "Współczynnik chłodniczy (EER)",
+        "summary_eer_sub": "COP_chł = COP_grz − 1",
+        "summary_balance_label": "Błąd bilansu energii (TESPy)",
+        "summary_balance_sub": "Zamknięcie bilansu sieci",
         # Tab 4: SciPy
         "scipy_1_title": "1. Poszukiwanie wymaganej temperatury parowania (`scipy.optimize.root_scalar`)",
         "scipy_1_caption": "Sprawdź, jak ciepłe musi być dolne źródło (powietrze/grunt), aby przy obecnej temperaturze skraplania osiągnąć zadane COP.",
@@ -300,6 +309,8 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     "en": {
         # App & Header
         "page_title": "Heat Pump Cycle Calculator — Research Institute",
+        "brand_badge": "DUOHEAT PROJECT",
+        "brand_tagline": "Thermodynamic cycle simulator",
         "app_title": "Heat Pump Cycle Calculator & Simulator",
         "app_subtitle": "Training and research tool (TESPy, CoolProp and SciPy).",
         "footer_html": (
@@ -318,6 +329,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "edu_lessons_expander": "Lessons (choose topic)",
         # Sidebar
         "sidebar_header": "Cycle Configuration",
+        "scenario_fluid_header": "Scenario & Refrigerant",
         "preset_label": "Scenario preset (quick start)",
         "preset_custom": "Custom settings",
         "preset_help": "Select a typical engineering case to see realistic operating values.",
@@ -439,6 +451,12 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "exergy_eff_box": "**Exergetic efficiency (vs. Carnot cycle):** `{val:.1f} %`",
         "eer_box": "**Cooling COP (EER / COP_cool):** `{val:.2f}`",
         "tespy_err_box": "**Energy balance closure error (TESPy):** `{val:.4e} W`",
+        "summary_exergy_label": "Exergetic efficiency",
+        "summary_exergy_sub": "Relative to Carnot cycle",
+        "summary_eer_label": "Cooling COP (EER)",
+        "summary_eer_sub": "COP_cool = COP_heat − 1",
+        "summary_balance_label": "Energy balance error (TESPy)",
+        "summary_balance_sub": "Network balance closure",
         # Tab 4: SciPy
         "scipy_1_title": "1. Finding Required Evaporation Temperature (`scipy.optimize.root_scalar`)",
         "scipy_1_caption": "Check how warm the heat source (air/ground) must be to reach a target COP at the current condensation temperature.",

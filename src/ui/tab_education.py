@@ -39,13 +39,27 @@ def _solve_lab_cycle_cached(
 
 def _base_layout(fig: go.Figure, title: str, x_title: str, y_title: str) -> go.Figure:
     fig.update_layout(
-        title=dict(text=title, font=dict(size=14)),
-        xaxis_title=x_title,
-        yaxis_title=y_title,
-        height=340,
+        title=dict(text=title, font=dict(size=14, family="Inter, sans-serif", color="#f1f5f9")),
+        font=dict(family="Inter, sans-serif", color="#cbd5e1", size=12),
+        xaxis=dict(
+            title=x_title,
+            gridcolor="rgba(148, 163, 184, 0.14)",
+            zerolinecolor="rgba(148, 163, 184, 0.22)",
+        ),
+        yaxis=dict(
+            title=y_title,
+            gridcolor="rgba(148, 163, 184, 0.14)",
+            zerolinecolor="rgba(148, 163, 184, 0.22)",
+        ),
+        hoverlabel=dict(
+            bgcolor="#0b2435",
+            bordercolor="#0693e3",
+            font=dict(color="#f1f5f9", family="Inter, sans-serif", size=12),
+        ),
+        height=350,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=45, r=20, t=50, b=50),
+        margin=dict(l=48, r=20, t=52, b=56),
         legend=dict(orientation="h", yanchor="top", y=-0.22, xanchor="center", x=0.5),
     )
     return fig
@@ -239,16 +253,26 @@ def _render_mini_lab(lesson: Lesson, base_input: CycleInput, lang: str) -> None:
         r1 = _solve_lab_cycle_cached(f1, 0.0, 45.0, lang=lang)
         r2 = _solve_lab_cycle_cached(f2, 0.0, 45.0, lang=lang)
         with col_a:
-            st.info(
-                f"**{f1}** (`{REFRIGERANTS[f1].safety_group}`, GWP={REFRIGERANTS[f1].gwp})\n\n"
-                f"- COP: `{r1.cop_heating:.2f}` | T2: `{r1.t_discharge_c:.1f} °C`\n"
-                f"- p1/p2: `{r1.p_evap_bar:.1f} / {r1.p_cond_bar:.1f} bar` (Π={r1.pressure_ratio:.2f})"
+            st.markdown(
+                f"""
+                <div class="summary-card">
+                    <div class="summary-label">{f1} • {REFRIGERANTS[f1].safety_group} • GWP {REFRIGERANTS[f1].gwp}</div>
+                    <div class="summary-value">COP {r1.cop_heating:.2f} | T₂ {r1.t_discharge_c:.1f} °C</div>
+                    <div class="summary-sub">p₁/p₂: {r1.p_evap_bar:.1f} / {r1.p_cond_bar:.1f} bar (Π = {r1.pressure_ratio:.2f})</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
         with col_b:
-            st.info(
-                f"**{f2}** (`{REFRIGERANTS[f2].safety_group}`, GWP={REFRIGERANTS[f2].gwp})\n\n"
-                f"- COP: `{r2.cop_heating:.2f}` | T2: `{r2.t_discharge_c:.1f} °C`\n"
-                f"- p1/p2: `{r2.p_evap_bar:.1f} / {r2.p_cond_bar:.1f} bar` (Π={r2.pressure_ratio:.2f})"
+            st.markdown(
+                f"""
+                <div class="summary-card">
+                    <div class="summary-label">{f2} • {REFRIGERANTS[f2].safety_group} • GWP {REFRIGERANTS[f2].gwp}</div>
+                    <div class="summary-value">COP {r2.cop_heating:.2f} | T₂ {r2.t_discharge_c:.1f} °C</div>
+                    <div class="summary-sub">p₁/p₂: {r2.p_evap_bar:.1f} / {r2.p_cond_bar:.1f} bar (Π = {r2.pressure_ratio:.2f})</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
 
         all_res = [_solve_lab_cycle_cached(fk, 0.0, 45.0, lang=lang) for fk in fluid_keys]
@@ -273,8 +297,15 @@ def render_education_page(base_input: CycleInput, lang: str) -> None:
     lesson = lesson_map[selected_id]
     l_txt = get_lesson_text(lesson, lang)
 
-    st.markdown(f"### {l_txt['title']}")
-    st.caption(l_txt["subtitle"])
+    st.markdown(
+        f"""
+        <div class="edu-lesson-header">
+            <div class="edu-lesson-eyebrow">{l_txt['subtitle']}</div>
+            <h2 class="edu-lesson-title">{l_txt['title']}</h2>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     with st.container(border=True):
         st.markdown(f"#### {t('edu_theory_header', lang)}")
