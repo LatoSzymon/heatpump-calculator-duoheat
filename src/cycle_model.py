@@ -1,22 +1,22 @@
 """Model jednostopniowego obiegu pompy ciepła oparty na bibliotece TESPy i CoolProp."""
 
-from dataclasses import dataclass
-from typing import Dict, Any, List, Tuple
-import logging
+from dataclasses import dataclass   #automatyczne generowanie metod __init__ __repr__ oraz __eq__ dla klas CycleInput oraz CycleResult
+from typing import Dict, Any, List, Tuple   #import dla czytelności i kompatybilności wstecznej
+import logging  #moduł do zarządzania logami
 import numpy as np
 import pandas as pd
-import CoolProp.CoolProp as CP
-from tespy.networks import Network
-from tespy.components import (
-    CycleCloser,
-    Compressor,
-    SimpleHeatExchanger,
-    Valve,
+import CoolProp.CoolProp as CP  #otwartoźródłowa biblioteka termodynamiczna dla ponad 120 płynów
+from tespy.networks import Network  #TESpy służy do symulacji ustalonych układów energetycznych przez budowę topologii sieci i rozwiązywanie układu nieliniowych równań bilansu masy i energii metodą Newtona-Raphsona
+from tespy.components import ( #Network to główny kontener przechowujący cały obieg, jednostki i solver
+    CycleCloser,    #Komponent zamyka pętlę obiegu zamkniętego (pilnuje żeby na końcu wartości były takie jak na początku)
+    Compressor,     #Sprężarka - liczy pracę sprężania i sprawność izenotropową
+    SimpleHeatExchanger,    #Jednoprzepływowy wymiennik ciepła
+    Valve,  #Zawór dławiący realizue przemianę izentalpową
 )
-from tespy.connections import Connection
+from tespy.connections import Connection    #rurociąg łączący wylot jednego komponentu z wlotem kolejnego (tu się odczytuje parametry stanu w pkt. 1 2 3 4)
 
-from src.i18n import t
-from src.utils import (
+from src.i18n import t  #tłumaczenia
+from src.utils import ( #utilsy
     c_to_k,
     k_to_c,
     pa_to_bar,
@@ -24,18 +24,18 @@ from src.utils import (
 )
 
 # Wyciszenie nadmiarowych logów TESPy podczas symulacji i optymalizacji
-logging.getLogger("tespy").setLevel(logging.ERROR)
+logging.getLogger("tespy").setLevel(logging.ERROR)  #Wycisza Warning i info, zostawia error
 logging.getLogger("TESPyLogger").setLevel(logging.ERROR)
 
 # Cache sieci TESPy dla poszczególnych czynników chłodniczych (przyspiesza wielokrotne obliczenia SciPy i Streamlit)
-_NETWORK_CACHE: Dict[
-    str,
-    Tuple[
+_NETWORK_CACHE: Dict[   #Słownik na poziomie modułu pełniący rolę pamięci podręcznej
+    str,                #kluczem jest nazwa czynnika
+    Tuple[              #wartością zaś jest krotka ze wszystkimi parametrami
         Network,
         Compressor,
-        SimpleHeatExchanger,
-        Valve,
-        SimpleHeatExchanger,
+        SimpleHeatExchanger,        #PO CO? Bo budowanie topologii siei w TESpy trwa długo. Dlatego
+        Valve,                      #trzymamy gotową sieć dla danego czynnika, a kolejne obliczenia
+        SimpleHeatExchanger,        #podmieniają wartości brzegowe i startują z poprzedniego rozwiązania
         Connection,
         Connection,
         Connection,
@@ -44,7 +44,7 @@ _NETWORK_CACHE: Dict[
 ] = {}
 
 
-def _get_or_create_network(
+def _get_or_create_network(     #Tworzymy (albo szukamy) Network
     fluid: str,
 ) -> Tuple[
     Network,
@@ -61,8 +61,8 @@ def _get_or_create_network(
     if fluid in _NETWORK_CACHE:
         return _NETWORK_CACHE[fluid]
 
-    nw = Network(iterinfo=False)
-    nw.units.set_defaults(
+    nw = Network(iterinfo=False)    #Tworzymy mowy obiekt Network (interinfo=False wyłącza drukowanie w konsoli tabel ze zbieżnością każdej iteracji Newtona-Raphsona)
+    nw.units.set_defaults(  #Konfiguracja jednostek przez TESpy
         temperature="degC",
         pressure="bar",
         enthalpy="kJ/kg",
@@ -71,38 +71,42 @@ def _get_or_create_network(
         power="W",
     )
 
-    cc = CycleCloser("CycleCloser")
+    cc = CycleCloser("CycleCloser") #Komponenty z etykietami
     comp = Compressor("Sprężarka")
     cond = SimpleHeatExchanger("Skraplacz")
     valve = Valve("Zawór dławiący")
     evap = SimpleHeatExchanger("Parownik")
 
-    c0 = Connection(evap, "out1", cc, "in1", label="0_evap_to_cc")
+    c0 = Connection(evap, "out1", cc, "in1", label="0_evap_to_cc")  #Łączymy porty wylotowe out1 z in1
     c1 = Connection(cc, "out1", comp, "in1", label="1_ssanie_sprezarki")
     c2 = Connection(comp, "out1", cond, "in1", label="2_tloczenie_sprezarki")
     c3 = Connection(cond, "out1", valve, "in1", label="3_za_skraplaczem")
     c4 = Connection(valve, "out1", evap, "in1", label="4_za_zaworem")
+    """
+Parownik -> CycleCloser (c0) -> Sprężarka (c1, punkt 1) -> Skraplacz (c2, punkt 2) -> Zawór (c3, punkt 3) -> Parownik (c4, punkt 4).  
+Dlaczego jest c0 i c1? CycleCloser stoi pomiędzy wylotem parownika (c0) a ssaniem sprężarki (c1).
+W trakcie obliczeń c0 i c1 mają identyczne parametry fizyczne, dlatego do dalszej analizy potrzebujemy tylko połączeń c1..c4.
+    """
+    nw.add_conns(c0, c1, c2, c3, c4)    #rejestracja w obiekcie sieci
 
-    nw.add_conns(c0, c1, c2, c3, c4)
-
-    cond.set_attr(pr=1.0)
-    evap.set_attr(pr=1.0)
-    c1.set_attr(fluid={fluid: 1.0})
+    cond.set_attr(pr=1.0)   
+    evap.set_attr(pr=1.0)               #ta dwójka gagatków Ustawia założenie idealnych wymienników izobarycznych
+    c1.set_attr(fluid={fluid: 1.0})     #Definiuje skład chemiczny czynnika jako 100% wybranego gazu
 
     _NETWORK_CACHE[fluid] = (nw, comp, cond, valve, evap, c1, c2, c3, c4)
     return _NETWORK_CACHE[fluid]
 
-
+#TE DWIE FUNKCJE SĄ PO TO ŻEBY NA WYKRESACH T-s PRZEMIANA W SKRAPLACZU NIE PRZECHODZIŁA JAKO JEDNA LINIA, TYLKO ŁAMANA (ZGODNIE Z ZAŁOŻENIAMI)
 def _sample_isobar_segment(
     fluid: str, p_pa: float, h_start_j: float, h_end_j: float, n: int = 12
 ) -> Tuple[List[float], List[float], List[float], List[float]]:
     """Próbkuje izobaryczną przemianę (p = const) między dwoma entalpiami."""
-    if abs(h_end_j - h_start_j) < 1.0:
+    if abs(h_end_j - h_start_j) < 1.0:          #Jeśli odcinek ma zerową zmianę entlapii (<1 J/kg) zwraca puste listy żeby nie dublować punktów
         return [], [], [], []
-    h_vals = np.linspace(h_start_j, h_end_j, n)
-    p_bar = pa_to_bar(p_pa)
+    h_vals = np.linspace(h_start_j, h_end_j, n) #Dzieli przedział entlapii od h_start_j do h_end_j na n równych kroków
+    p_bar = pa_to_bar(p_pa)     #konwersja z Pa na Bar
     p_list, t_list, h_list, s_list = [], [], [], []
-    for h_j in h_vals:
+    for h_j in h_vals:  #Dla każdego kroku entlapii przu stałym ciśnieniu odpytuje CP.PropsSI o temperaturę T oraz entropię S, żeby potem zapisać do list
         t_c = k_to_c(CP.PropsSI("T", "P", p_pa, "H", float(h_j), fluid))
         s_kj = CP.PropsSI("S", "P", p_pa, "H", float(h_j), fluid) / 1e3
         p_list.append(p_bar)
@@ -112,11 +116,11 @@ def _sample_isobar_segment(
     return p_list, t_list, h_list, s_list
 
 
-def _sample_isenthalp_segment(
+def _sample_isenthalp_segment(      #Próbkuję przemianę dławienia h=const od ciśnienia skraplania do ciśnienia parowania
     fluid: str, h_j: float, p_start_pa: float, p_end_pa: float, n: int = 15
 ) -> Tuple[List[float], List[float], List[float], List[float]]:
     """Próbkuje izentalpowe dławienie (h = const) między ciśnieniem skraplania i parowania."""
-    p_vals = np.geomspace(p_start_pa, p_end_pa, n)
+    p_vals = np.geomspace(p_start_pa, p_end_pa, n)      #ten geomspace zamiast podziału liniowego używa podziału geometrycznego
     p_list, t_list, h_list, s_list = [], [], [], []
     for p_pa in p_vals:
         t_c = k_to_c(CP.PropsSI("T", "P", float(p_pa), "H", h_j, fluid))
@@ -131,7 +135,6 @@ def _sample_isenthalp_segment(
 @dataclass
 class CycleInput:
     """Parametry wejściowe jednostopniowego obiegu pompy ciepła."""
-
     fluid: str = "R290"
     t_evap_c: float = 0.0
     t_cond_c: float = 45.0
@@ -144,7 +147,6 @@ class CycleInput:
 @dataclass
 class CycleResult:
     """Wyniki obliczeń obiegu pompy ciepła."""
-
     cop_heating: float
     cop_cooling: float
     cop_carnot: float
@@ -179,7 +181,7 @@ class HeatPumpCycle:
     def __init__(self, params: CycleInput, lang: str = "pl") -> None:
         self.params = params
         self.lang = lang
-        validate_cycle_inputs(
+        validate_cycle_inputs(      #Sprawdzamy czy parametry nie łamią przypadkiem praw fizyki
             fluid=params.fluid,
             t_evap_c=params.t_evap_c,
             t_cond_c=params.t_cond_c,
@@ -235,7 +237,7 @@ class HeatPumpCycle:
         # 3. Rozwiązanie układu równań nieliniowych TESPy
         nw.solve(mode="design")
 
-        if not nw.converged:
+        if not nw.converged:    #Jeśli metoda N-R wystrzeliła poza dziedzinę, to resetujemy
             # Jeśli sieć z cache nie zbiegła, zresetuj instancję sieci dla tego czynnika i spróbuj ponownie
             _NETWORK_CACHE.pop(fluid, None)
             nw, comp, cond, valve, evap, c1, c2, c3, c4 = _get_or_create_network(fluid)
@@ -256,14 +258,14 @@ class HeatPumpCycle:
 
         cop_heating = q_cond_kw / p_comp_kw
         cop_cooling = q_evap_kw / p_comp_kw
-        cop_carnot = t_cond_k / (t_cond_k - t_evap_k)
-        eta_exergetic = cop_heating / cop_carnot
-        pressure_ratio = p_cond_bar / p_evap_bar
-        delta_t_lift_k = p.t_cond_c - p.t_evap_c
+        cop_carnot = t_cond_k / (t_cond_k - t_evap_k)       #teoretyczny maksymalny COP idealnego obiegu
+        eta_exergetic = cop_heating / cop_carnot    #Sprawność egzergetyczna. Jaki procent idealnego limitu fizycznyegowykorzystuje nasza rzeczywista pompa ciepła
+        pressure_ratio = p_cond_bar / p_evap_bar    #spręż
+        delta_t_lift_k = p.t_cond_c - p.t_evap_c    #podnoszenie temperatury - ^Tlift
 
         # Bilans energii: |Q_cond| - (Q_evap + P_comp) [W]
-        energy_balance_error_w = abs(cond.Q.val) - (evap.Q.val + comp.P.val)
-
+        energy_balance_error_w = abs(cond.Q.val) - (evap.Q.val + comp.P.val)    #pierwsza zasada termodynamiki
+        #W idealnie zbieżnym rozwiązaniu wynosi 0.0000W; Dowód poprawności numerycznej solvera
         # Zestawienie stanów w 4 głównych węzłach obiegu
         connections = [
             ("1", t("pt1_superheated", active_lang) if p.superheat_k > 1e-4 else t("pt1_saturated", active_lang), c1),
@@ -301,11 +303,12 @@ class HeatPumpCycle:
 
         # Stopień suchości za zaworem rozprężnym (punkt 4)
         x_4_raw = CP.PropsSI("Q", "P", c4.p.val * 1e5, "H", c4.h.val * 1e3, fluid)
-        x_4 = float(np.clip(x_4_raw, 0.0, 1.0))
-
+        x_4 = float(np.clip(x_4_raw, 0.0, 1.0))     #Wyciąga stopień suchości w punkcie 4 (za zaworem dławiącym). clipuje w razie gdyby były drobne niedokładności
+        #Ile % czynnika odparowało już w samym zaworze zanim w ogóle trafił do parownika
+        
         # Objętościowy strumień zasysania sprężarki [m³/h] w punkcie 1
         rho_1 = CP.PropsSI("D", "P", c1.p.val * 1e5, "H", c1.h.val * 1e3, fluid)
-        v_dot_suction_m3_h = (mass_flow / rho_1) * 3600.0
+        v_dot_suction_m3_h = (mass_flow / rho_1) * 3600.0   #Wydajność objętościowa potrzebnej sprężarki
 
         # Punkty pośrednie nasycenia
         h_cond_vap = CP.PropsSI("H", "P", p_cond_pa, "Q", 1.0, fluid) / 1e3
