@@ -51,10 +51,17 @@ def render_simulation_controls(lang: str) -> Tuple[CycleInput, dict]:
     init_cycle_state()
 
     with st.container(border=True):
-        st.subheader(t("sidebar_header", lang))
-        col_fluid, col_temps, col_cycle = st.columns([1.15, 1.0, 1.0])
+        st.markdown(
+            f'<div class="ctrl-card-header"><h3 class="ctrl-card-title">{t("sidebar_header", lang)}</h3></div>',
+            unsafe_allow_html=True,
+        )
+        col_fluid, col_temps, col_cycle = st.columns([1.15, 1.0, 1.0], gap="medium")
 
         with col_fluid:
+            st.markdown(
+                f'<div class="ctrl-section-title">{t("scenario_fluid_header", lang)}</div>',
+                unsafe_allow_html=True,
+            )
             preset_options = ["custom"] + list(SCENARIO_PRESETS.keys())
             selected_preset = st.selectbox(
                 t("preset_label", lang),
@@ -90,21 +97,26 @@ def render_simulation_controls(lang: str) -> Tuple[CycleInput, dict]:
                 st.error(t("fluid_limit_error", lang, fluid=fluid_code, exc=exc))
                 limits = {"T_crit_C": 95.0, "p_crit_bar": 40.0, "T_min_C": -50.0}
 
-            st.caption(
-                t(
-                    "fluid_meta",
-                    lang,
-                    formula=ref_info.chemical_formula,
-                    t_crit=limits["T_crit_C"],
-                    p_crit=limits["p_crit_bar"],
-                    desc=ref_text["description"],
-                )
+            safe_cls = f"fluid-chip-safe-{ref_info.safety_group.lower()}"
+            st.markdown(
+                f"""
+                <div class="fluid-chips">
+                    <span class="fluid-chip">{ref_info.chemical_formula}</span>
+                    <span class="fluid-chip {safe_cls}">{ref_info.safety_group}</span>
+                    <span class="fluid-chip">GWP {ref_info.gwp}</span>
+                    <span class="fluid-chip">T_crit {limits['T_crit_C']:.1f} °C</span>
+                    <span class="fluid-chip">p_crit {limits['p_crit_bar']:.1f} bar</span>
+                </div>
+                <p class="fluid-desc">{ref_text['description']}</p>
+                """,
+                unsafe_allow_html=True,
             )
-            if selected_preset != "custom":
-                st.info(get_preset_text(selected_preset, lang)["explanation"])
 
         with col_temps:
-            st.markdown(f"**{t('source_temps_header', lang)}**")
+            st.markdown(
+                f'<div class="ctrl-section-title">{t("source_temps_header", lang)}</div>',
+                unsafe_allow_html=True,
+            )
             t_evap_c = st.slider(
                 t("t_evap_label", lang),
                 min_value=-25.0,
@@ -145,7 +157,10 @@ def render_simulation_controls(lang: str) -> Tuple[CycleInput, dict]:
             )
 
         with col_cycle:
-            st.markdown(f"**{t('cycle_comp_header', lang)}**")
+            st.markdown(
+                f'<div class="ctrl-section-title">{t("cycle_comp_header", lang)}</div>',
+                unsafe_allow_html=True,
+            )
             superheat_k = st.slider(
                 t("superheat_label", lang),
                 min_value=0.0,
@@ -180,6 +195,12 @@ def render_simulation_controls(lang: str) -> Tuple[CycleInput, dict]:
                 key="eta_s",
                 on_change=_mark_custom,
                 help=t("eta_s_help", lang),
+            )
+
+        if selected_preset != "custom":
+            st.markdown(
+                f'<div class="preset-banner">{get_preset_text(selected_preset, lang)["explanation"]}</div>',
+                unsafe_allow_html=True,
             )
 
     cycle_input = CycleInput(

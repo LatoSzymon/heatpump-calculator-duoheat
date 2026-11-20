@@ -10,6 +10,15 @@ from src.i18n import normalize_lang, t
 if TYPE_CHECKING:
     from src.cycle_model import CycleResult
 
+_FONT_FAMILY = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+_GRID_COLOR = "rgba(148, 163, 184, 0.14)"
+_ZERO_COLOR = "rgba(148, 163, 184, 0.22)"
+_HOVER_STYLE = dict(
+    bgcolor="#0b2435",
+    bordercolor="#0693e3",
+    font=dict(color="#f1f5f9", family=_FONT_FAMILY, size=12),
+)
+
 
 def _compute_saturation_dome(fluid: str, n_points: int = 120) -> Dict[str, Any]:
     """Wyznacza krzywą nasycenia (x=0 oraz x=1) dla zadanego czynnika chłodniczego."""
@@ -149,51 +158,53 @@ def create_cycle_schematic(result: "CycleResult", lang: str = "pl") -> go.Figure
     )
 
     annotations = [
-        dict(x=5.0, y=4.8, text=t("plot_ann_cond", lang), showarrow=False, font=dict(color="#F87171", size=13)),
-        dict(x=5.0, y=1.2, text=t("plot_ann_evap", lang), showarrow=False, font=dict(color="#38BDF8", size=13)),
-        dict(x=2.0, y=3.0, text=t("plot_ann_comp", lang), showarrow=False, font=dict(color="#FB923C", size=11)),
-        dict(x=8.0, y=3.0, text=t("plot_ann_valve", lang), showarrow=False, font=dict(color="#4ADE80", size=11)),
+        dict(x=5.0, y=4.8, text=t("plot_ann_cond", lang), showarrow=False, font=dict(color="#ff8a5c", size=13, family=_FONT_FAMILY)),
+        dict(x=5.0, y=1.2, text=t("plot_ann_evap", lang), showarrow=False, font=dict(color="#67c8ff", size=13, family=_FONT_FAMILY)),
+        dict(x=2.0, y=3.0, text=t("plot_ann_comp", lang), showarrow=False, font=dict(color="#ff9f5a", size=11, family=_FONT_FAMILY)),
+        dict(x=8.0, y=3.0, text=t("plot_ann_valve", lang), showarrow=False, font=dict(color="#4ade80", size=11, family=_FONT_FAMILY)),
 
         dict(
             x=5.0, y=6.0, ax=5.0, ay=5.4, xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.3, arrowwidth=3, arrowcolor="#EF4444",
+            showarrow=True, arrowhead=2, arrowsize=1.3, arrowwidth=3, arrowcolor="#ff5a1f",
         ),
         dict(
             x=5.0, y=6.35,
             text=t("plot_ann_qcond", lang, q=result.q_cond_kw),
-            showarrow=False, font=dict(color="#F87171", size=13),
+            showarrow=False, font=dict(color="#ff8a5c", size=13, family=_FONT_FAMILY),
         ),
         dict(
             x=5.0, y=0.6, ax=5.0, ay=0.0, xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.3, arrowwidth=3, arrowcolor="#0EA5E9",
+            showarrow=True, arrowhead=2, arrowsize=1.3, arrowwidth=3, arrowcolor="#0693e3",
         ),
         dict(
             x=5.0, y=-0.35,
             text=t("plot_ann_qevap", lang, q=result.q_evap_kw),
-            showarrow=False, font=dict(color="#38BDF8", size=13),
+            showarrow=False, font=dict(color="#67c8ff", size=13, family=_FONT_FAMILY),
         ),
         dict(
             x=1.3, y=3.0, ax=0.25, ay=3.0, xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.3, arrowwidth=3, arrowcolor="#F97316",
+            showarrow=True, arrowhead=2, arrowsize=1.3, arrowwidth=3, arrowcolor="#ff8a3d",
         ),
         dict(
             x=0.35, y=3.55,
             text=t("plot_ann_pcomp", lang, p=result.p_comp_kw),
-            showarrow=False, font=dict(color="#FB923C", size=12),
+            showarrow=False, font=dict(color="#ff9f5a", size=12, family=_FONT_FAMILY),
         ),
 
-        dict(x=1.05, y=1.85, text=f"<b>{t_vals[0]:.1f} °C</b><br>{p_vals[0]:.2f} bar", showarrow=False, font=dict(size=11, color="#38BDF8")),
-        dict(x=2.8, y=5.45, text=f"<b>{t_vals[1]:.1f} °C</b><br>{p_vals[1]:.2f} bar", showarrow=False, font=dict(size=11, color="#F87171")),
-        dict(x=7.2, y=5.45, text=f"<b>{t_vals[2]:.1f} °C</b><br>{p_vals[2]:.2f} bar", showarrow=False, font=dict(size=11, color="#FB923C")),
-        dict(x=9.1, y=1.85, text=f"<b>{t_vals[3]:.1f} °C</b><br>x = {result.x_4 * 100:.0f}%", showarrow=False, font=dict(size=11, color="#38BDF8")),
+        dict(x=1.05, y=1.85, text=f"<b>{t_vals[0]:.1f} °C</b><br>{p_vals[0]:.2f} bar", showarrow=False, font=dict(size=11, color="#67c8ff", family=_FONT_FAMILY)),
+        dict(x=2.8, y=5.45, text=f"<b>{t_vals[1]:.1f} °C</b><br>{p_vals[1]:.2f} bar", showarrow=False, font=dict(size=11, color="#ff8a5c", family=_FONT_FAMILY)),
+        dict(x=7.2, y=5.45, text=f"<b>{t_vals[2]:.1f} °C</b><br>{p_vals[2]:.2f} bar", showarrow=False, font=dict(size=11, color="#ff9f5a", family=_FONT_FAMILY)),
+        dict(x=9.1, y=1.85, text=f"<b>{t_vals[3]:.1f} °C</b><br>x = {result.x_4 * 100:.0f}%", showarrow=False, font=dict(size=11, color="#67c8ff", family=_FONT_FAMILY)),
 
-        dict(x=2.0, y=4.25, ax=2.0, ay=3.75, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#EF4444", arrowwidth=2),
-        dict(x=8.0, y=2.05, ax=8.0, ay=2.45, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#0EA5E9", arrowwidth=2),
+        dict(x=2.0, y=4.25, ax=2.0, ay=3.75, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#ff5a1f", arrowwidth=2),
+        dict(x=8.0, y=2.05, ax=8.0, ay=2.45, xref="x", yref="y", axref="x", ayref="y", showarrow=True, arrowhead=2, arrowcolor="#0693e3", arrowwidth=2),
     ]
 
     fig.update_layout(
         shapes=shapes,
         annotations=annotations,
+        font=dict(family=_FONT_FAMILY, color="#e2e8f0"),
+        hoverlabel=_HOVER_STYLE,
         xaxis=dict(range=[-0.4, 10.2], visible=False, fixedrange=True),
         yaxis=dict(range=[-0.65, 6.7], visible=False, fixedrange=True),
         height=400,
@@ -249,8 +260,18 @@ def create_energy_balance_bar(result: "CycleResult", lang: str = "pl") -> go.Fig
 
     fig.update_layout(
         barmode="stack",
-        title=t("plot_bal_title", lang, q_evap=result.q_evap_kw, p_comp=result.p_comp_kw, q_cond=result.q_cond_kw),
-        xaxis_title=t("plot_bal_yaxis", lang),
+        title=dict(
+            text=t("plot_bal_title", lang, q_evap=result.q_evap_kw, p_comp=result.p_comp_kw, q_cond=result.q_cond_kw),
+            font=dict(size=13, family=_FONT_FAMILY, color="#f1f5f9"),
+        ),
+        font=dict(family=_FONT_FAMILY, color="#cbd5e1", size=12),
+        hoverlabel=_HOVER_STYLE,
+        xaxis=dict(
+            title=t("plot_bal_yaxis", lang),
+            gridcolor=_GRID_COLOR,
+            zerolinecolor=_ZERO_COLOR,
+        ),
+        yaxis=dict(gridcolor="rgba(0,0,0,0)"),
         height=190,
         showlegend=False,
         margin=dict(l=10, r=10, t=40, b=40),
@@ -353,22 +374,23 @@ def create_ph_diagram(plot_data: Dict[str, Any], lang: str = "pl") -> go.Figure:
     )
 
     fig.update_layout(
-        title=dict(text=t("plot_ph_title", lang, fluid=fluid), font=dict(size=15)),
-        xaxis_title=t("plot_ph_xaxis", lang),
-        yaxis_title=t("plot_ph_yaxis", lang),
-        yaxis_type="log",
+        title=dict(text=t("plot_ph_title", lang, fluid=fluid), font=dict(size=15, family=_FONT_FAMILY, color="#f1f5f9")),
+        font=dict(family=_FONT_FAMILY, color="#cbd5e1", size=12),
+        hoverlabel=_HOVER_STYLE,
+        xaxis=dict(title=t("plot_ph_xaxis", lang), gridcolor=_GRID_COLOR, zerolinecolor=_ZERO_COLOR),
+        yaxis=dict(title=t("plot_ph_yaxis", lang), type="log", gridcolor=_GRID_COLOR, zerolinecolor=_ZERO_COLOR),
         height=460,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         legend=dict(
             orientation="h",
             yanchor="top",
-            y=-0.26,
+            y=-0.24,
             xanchor="center",
             x=0.5,
             font=dict(size=11),
         ),
-        margin=dict(l=45, r=15, t=50, b=115),
+        margin=dict(l=48, r=16, t=52, b=110),
     )
 
     return fig
@@ -448,21 +470,23 @@ def create_ts_diagram(plot_data: Dict[str, Any], lang: str = "pl") -> go.Figure:
     )
 
     fig.update_layout(
-        title=dict(text=t("plot_ts_title", lang, fluid=fluid), font=dict(size=15)),
-        xaxis_title=t("plot_ts_xaxis", lang),
-        yaxis_title=t("plot_ts_yaxis", lang),
+        title=dict(text=t("plot_ts_title", lang, fluid=fluid), font=dict(size=15, family=_FONT_FAMILY, color="#f1f5f9")),
+        font=dict(family=_FONT_FAMILY, color="#cbd5e1", size=12),
+        hoverlabel=_HOVER_STYLE,
+        xaxis=dict(title=t("plot_ts_xaxis", lang), gridcolor=_GRID_COLOR, zerolinecolor=_ZERO_COLOR),
+        yaxis=dict(title=t("plot_ts_yaxis", lang), gridcolor=_GRID_COLOR, zerolinecolor=_ZERO_COLOR),
         height=460,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         legend=dict(
             orientation="h",
             yanchor="top",
-            y=-0.26,
+            y=-0.24,
             xanchor="center",
             x=0.5,
             font=dict(size=11),
         ),
-        margin=dict(l=45, r=15, t=50, b=115),
+        margin=dict(l=48, r=16, t=52, b=110),
     )
 
     return fig
@@ -517,13 +541,15 @@ def create_cop_contour_plot(
     )
 
     fig.update_layout(
-        title=t("plot_contour_title", lang),
-        xaxis_title=t("plot_contour_xaxis", lang),
-        yaxis_title=t("plot_contour_yaxis", lang),
+        title=dict(text=t("plot_contour_title", lang), font=dict(size=14, family=_FONT_FAMILY, color="#f1f5f9")),
+        font=dict(family=_FONT_FAMILY, color="#cbd5e1", size=12),
+        hoverlabel=_HOVER_STYLE,
+        xaxis=dict(title=t("plot_contour_xaxis", lang), gridcolor=_GRID_COLOR),
+        yaxis=dict(title=t("plot_contour_yaxis", lang), gridcolor=_GRID_COLOR),
         height=480,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=45, r=20, t=50, b=50),
+        margin=dict(l=48, r=20, t=52, b=52),
     )
 
     return fig
@@ -555,13 +581,15 @@ def create_subcooling_curve_plot(opt_res: Dict[str, Any], lang: str = "pl") -> g
         )
     )
     fig.update_layout(
-        title=t("plot_subcool_title", lang),
-        xaxis_title=t("plot_subcool_xaxis", lang),
-        yaxis_title=t("plot_subcool_yaxis", lang),
-        height=330,
+        title=dict(text=t("plot_subcool_title", lang), font=dict(size=14, family=_FONT_FAMILY, color="#f1f5f9")),
+        font=dict(family=_FONT_FAMILY, color="#cbd5e1", size=12),
+        hoverlabel=_HOVER_STYLE,
+        xaxis=dict(title=t("plot_subcool_xaxis", lang), gridcolor=_GRID_COLOR, zerolinecolor=_ZERO_COLOR),
+        yaxis=dict(title=t("plot_subcool_yaxis", lang), gridcolor=_GRID_COLOR, zerolinecolor=_ZERO_COLOR),
+        height=340,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        margin=dict(l=40, r=20, t=45, b=85),
+        margin=dict(l=45, r=20, t=48, b=85),
         legend=dict(orientation="h", yanchor="top", y=-0.28, xanchor="center", x=0.5),
     )
     return fig

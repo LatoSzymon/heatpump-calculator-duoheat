@@ -76,8 +76,16 @@ lang, active_section = render_sidebar()
 init_cycle_state()
 
 # --- NAGŁÓWEK ---
-st.title(t("app_title", lang))
-st.markdown(t("app_subtitle", lang))
+st.markdown(
+    f"""
+    <div class="app-hero">
+        <div class="app-brand-badge">{t("brand_badge", lang)}</div>
+        <h1 class="app-hero-title">{t("app_title", lang)}</h1>
+        <p class="app-hero-subtitle">{t("app_subtitle", lang)}</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 if active_section == "education":
     base_input = CycleInput(
@@ -111,7 +119,6 @@ else:
         st.info(t("err_hint", lang))
     else:
         render_kpi_cards(result, lang)
-        st.divider()
 
         (
             tab_mechanics,
@@ -153,5 +160,4 @@ else:
             render_glossary_tab(lang)
 
 # --- STOPKA ---
-st.divider()
 st.markdown(t("footer_html", lang), unsafe_allow_html=True)
